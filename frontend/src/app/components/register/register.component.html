@@ -1,0 +1,156 @@
+<div class="container">
+  <div class="register-container">
+    <div class="card">
+      <h2>Inscription à l'événement</h2>
+      <p class="subtitle">Remplissez le formulaire ci-dessous pour vous inscrire</p>
+
+      <div *ngIf="!success">
+        <div *ngIf="error" class="alert alert-error">
+          {{ error }}
+        </div>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="first_name">Prénom *</label>
+              <input
+                type="text"
+                id="first_name"
+                class="form-control"
+                formControlName="first_name"
+                [class.error]="submitted && f['first_name'].errors"
+                placeholder="Votre prénom"
+              />
+              <div *ngIf="submitted && f['first_name'].errors" class="error-message">
+                <span *ngIf="f['first_name'].errors['required']">Le prénom est obligatoire</span>
+                <span *ngIf="f['first_name'].errors['maxlength']">Le prénom est trop long</span>
+                <span *ngIf="f['first_name'].errors['serverError']">{{ f['first_name'].errors['serverError'] }}</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="last_name">Nom *</label>
+              <input
+                type="text"
+                id="last_name"
+                class="form-control"
+                formControlName="last_name"
+                [class.error]="submitted && f['last_name'].errors"
+                placeholder="Votre nom"
+              />
+              <div *ngIf="submitted && f['last_name'].errors" class="error-message">
+                <span *ngIf="f['last_name'].errors['required']">Le nom est obligatoire</span>
+                <span *ngIf="f['last_name'].errors['maxlength']">Le nom est trop long</span>
+                <span *ngIf="f['last_name'].errors['serverError']">{{ f['last_name'].errors['serverError'] }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="gender">Genre *</label>
+              <select
+                id="gender"
+                class="form-control"
+                formControlName="gender"
+                [class.error]="submitted && f['gender'].errors"
+              >
+                <option value="">Sélectionnez...</option>
+                <option value="Homme">Homme</option>
+                <option value="Femme">Femme</option>
+                <option value="Autre">Autre</option>
+              </select>
+              <div *ngIf="submitted && f['gender'].errors" class="error-message">
+                <span *ngIf="f['gender'].errors['required']">Le genre est obligatoire</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="phone">Téléphone</label>
+              <input
+                type="tel"
+                id="phone"
+                class="form-control"
+                formControlName="phone"
+                [class.error]="submitted && f['phone'].errors"
+                placeholder="+33 6 12 34 56 78"
+              />
+              <div *ngIf="submitted && f['phone'].errors" class="error-message">
+                <span *ngIf="f['phone'].errors['pattern']">Format de téléphone invalide</span>
+                <span *ngIf="f['phone'].errors['serverError']">{{ f['phone'].errors['serverError'] }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email *</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              formControlName="email"
+              [class.error]="submitted && f['email'].errors"
+              placeholder="votre.email@example.com"
+            />
+            <div *ngIf="submitted && f['email'].errors" class="error-message">
+              <span *ngIf="f['email'].errors['required']">L'email est obligatoire</span>
+              <span *ngIf="f['email'].errors['email']">Format d'email invalide</span>
+              <span *ngIf="f['email'].errors['serverError']">{{ f['email'].errors['serverError'] }}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="access_type">Type d'accès *</label>
+            <select
+              id="access_type"
+              class="form-control"
+              formControlName="access_type"
+              [class.error]="submitted && f['access_type'].errors"
+            >
+              <option value="">Sélectionnez...</option>
+              <option value="foire">Foire uniquement</option>
+              <option value="conference">Conférence uniquement</option>
+              <option value="both">Foire et Conférence</option>
+            </select>
+            <div *ngIf="submitted && f['access_type'].errors" class="error-message">
+              <span *ngIf="f['access_type'].errors['required']">Le type d'accès est obligatoire</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-large" [disabled]="loading">
+              <span *ngIf="!loading">S'inscrire</span>
+              <span *ngIf="loading">Inscription en cours...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div *ngIf="success" class="success-container">
+        <div class="alert alert-success">
+          <h3>✓ Inscription réussie !</h3>
+          <p>Un email avec votre QR code vous a été envoyé à l'adresse indiquée.</p>
+        </div>
+
+        <div class="qr-display">
+          <h3>Votre QR Code</h3>
+          <p><strong>{{ participantName }}</strong></p>
+          <img [src]="'data:image/png;base64,' + qrCode" alt="QR Code" class="qr-image" />
+          <p class="qr-instructions">Présentez ce QR code à l'entrée de l'événement</p>
+        </div>
+
+        <div class="action-buttons">
+          <button (click)="downloadQR()" class="btn btn-primary">
+            Télécharger le QR Code
+          </button>
+          <button (click)="printQR()" class="btn btn-secondary">
+            Imprimer
+          </button>
+          <button (click)="registerAnother()" class="btn btn-secondary">
+            Nouvelle inscription
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

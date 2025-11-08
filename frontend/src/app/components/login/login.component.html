@@ -1,0 +1,64 @@
+<div class="container">
+  <div class="login-container">
+    <div class="card">
+      <div class="login-header">
+        <h2>Connexion Administrateur</h2>
+        <p class="subtitle">Accédez au panneau d'administration</p>
+      </div>
+
+      <div *ngIf="error" class="alert alert-error">
+        {{ error }}
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            formControlName="email"
+            [class.error]="submitted && f['email'].errors"
+            placeholder="admin@example.com"
+            autocomplete="email"
+          />
+          <div *ngIf="submitted && f['email'].errors" class="error-message">
+            <span *ngIf="f['email'].errors['required']">L'email est obligatoire</span>
+            <span *ngIf="f['email'].errors['email']">Format d'email invalide</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Mot de passe</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            formControlName="password"
+            [class.error]="submitted && f['password'].errors"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+          <div *ngIf="submitted && f['password'].errors" class="error-message">
+            <span *ngIf="f['password'].errors['required']">Le mot de passe est obligatoire</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-large" [disabled]="loading">
+            <span *ngIf="!loading">Se connecter</span>
+            <span *ngIf="loading">Connexion en cours...</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <p class="default-credentials">
+          <strong>Identifiants par défaut:</strong><br>
+          Email: admin@example.com<br>
+          Mot de passe: admin123
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

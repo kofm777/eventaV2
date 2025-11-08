@@ -1,0 +1,152 @@
+<div class="container">
+  <div class="admin-header">
+    <h2>Gestion des Participants</h2>
+    <p class="subtitle">Accepter ou rejeter les inscriptions</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    {{ success }}
+  </div>
+
+  <div class="card">
+    <div class="filters-section">
+      <h3>Filtres</h3>
+      <div class="filters-grid">
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-control" [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option value="">Tous</option>
+            <option value="pending">En attente</option>
+            <option value="accepted">Accepté</option>
+            <option value="rejected">Rejeté</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Type d'accès</label>
+          <select class="form-control" [(ngModel)]="accessTypeFilter" (change)="applyFilters()">
+            <option value="">Tous</option>
+            <option value="foire">Foire</option>
+            <option value="conference">Conférence</option>
+            <option value="both">Foire + Conférence</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Recherche</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="applyFilters()"
+            placeholder="Nom, email..."
+          />
+        </div>
+
+        <div class="form-group filter-actions">
+          <button class="btn btn-primary" (click)="applyFilters()">Appliquer</button>
+          <button class="btn btn-secondary" (click)="clearFilters()">Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <h3>Participants ({{ total }})</h3>
+      <button class="btn btn-secondary" (click)="loadParticipants()">
+        Actualiser
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Chargement...</p>
+    </div>
+
+    <div *ngIf="!loading && participants.length === 0" class="empty-state">
+      <p>Aucun participant trouvé.</p>
+    </div>
+
+    <div *ngIf="!loading && participants.length > 0" class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Genre</th>
+            <th>Téléphone</th>
+            <th>Type d'accès</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let participant of participants">
+            <td>
+              <strong>{{ participant.first_name }} {{ participant.last_name }}</strong>
+            </td>
+            <td>{{ participant.email }}</td>
+            <td>{{ participant.gender }}</td>
+            <td>{{ participant.phone || '-' }}</td>
+            <td>{{ getAccessTypeLabel(participant.access_type) }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(participant.status)">
+                {{ getStatusLabel(participant.status) }}
+              </span>
+            </td>
+            <td>{{ participant.created_at | date:'short' }}</td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  *ngIf="participant.status === 'pending'"
+                  class="btn btn-success btn-sm"
+                  (click)="acceptParticipant(participant)"
+                  title="Accepter"
+                >
+                  ✓
+                </button>
+                <button
+                  *ngIf="participant.status === 'pending'"
+                  class="btn btn-danger btn-sm"
+                  (click)="rejectParticipant(participant)"
+                  title="Rejeter"
+                >
+                  ✗
+                </button>
+                <span *ngIf="participant.status !== 'pending'" class="text-muted">
+                  -
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && lastPage > 1" class="pagination">
+      <button
+        class="btn btn-secondary"
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+      >
+        Précédent
+      </button>
+      <span class="pagination-info">
+        Page {{ currentPage }} sur {{ lastPage }}
+      </span>
+      <button
+        class="btn btn-secondary"
+        (click)="nextPage()"
+        [disabled]="currentPage === lastPage"
+      >
+        Suivant
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: eventaccess_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: event_access
+      MYSQL_USER: eventaccess
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - eventaccess_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eventaccess_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - DB_DATABASE=event_access
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+    depends_on:
+      - mysql
+      - mailhog
+    networks:
+      - eventaccess_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eventaccess_frontend
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    networks:
+      - eventaccess_network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: eventaccess_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - eventaccess_network
+
+volumes:
+  mysql_data:
+
+networks:
+  eventaccess_network:
+    driver: bridge

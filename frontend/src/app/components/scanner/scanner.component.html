@@ -1,0 +1,126 @@
+<div class="container">
+  <div class="scanner-header">
+    <h2>Scanner QR Code</h2>
+    <p class="subtitle">Scannez les QR codes des participants pour enregistrer leur entrée</p>
+  </div>
+
+  <div class="scanner-layout">
+    <div class="scanner-section">
+      <div class="card">
+        <h3>Scanner avec Caméra</h3>
+
+        <div class="form-group">
+          <label class="form-label">Nom du scanner (optionnel)</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="scannerUser"
+            placeholder="Ex: Entrée principale"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sélectionner une caméra</label>
+          <select class="form-control" [(ngModel)]="selectedCamera">
+            <option value="">Choisir une caméra...</option>
+            <option *ngFor="let camera of cameras" [value]="camera.deviceId">
+              {{ camera.label || 'Caméra ' + camera.deviceId.substring(0, 8) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="scanner-controls">
+          <button
+            *ngIf="!scanning"
+            class="btn btn-primary btn-large"
+            (click)="startScanning()"
+            [disabled]="!selectedCamera"
+          >
+            Démarrer le scanner
+          </button>
+          <button
+            *ngIf="scanning"
+            class="btn btn-danger btn-large"
+            (click)="stopScanning()"
+          >
+            Arrêter le scanner
+          </button>
+        </div>
+
+        <div class="video-container">
+          <video #video class="scanner-video" [class.active]="scanning"></video>
+          <div *ngIf="!scanning" class="video-placeholder">
+            <p>📷</p>
+            <p>La caméra apparaîtra ici</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Saisie Manuelle</h3>
+        <p class="help-text">Si le scanner ne fonctionne pas, vous pouvez saisir le code manuellement</p>
+
+        <div class="form-group">
+          <label class="form-label">Code QR</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="manualQrCode"
+            (keyup.enter)="scanManualCode()"
+            placeholder="Collez le code QR ici"
+          />
+        </div>
+
+        <button class="btn btn-primary" (click)="scanManualCode()">
+          Vérifier le code
+        </button>
+      </div>
+    </div>
+
+    <div class="results-section">
+      <!-- Speaker Avatar Component -->
+      <app-speaker-avatar
+        *ngIf="lastScanResult"
+        [participantName]="lastScanResult.first_name + ' ' + lastScanResult.last_name"
+        [gender]="lastScanResult.gender"
+        [autoPlay]="true"
+      ></app-speaker-avatar>
+
+      <div class="card">
+        <h3>Résultat du Scan</h3>
+
+        <div *ngIf="!success && !error && !lastScanResult" class="empty-state">
+          <p>En attente de scan...</p>
+        </div>
+
+        <div *ngIf="success" class="alert alert-success scan-result">
+          <div class="result-icon">✓</div>
+          <h4>{{ success }}</h4>
+          <div *ngIf="lastScanResult" class="participant-details">
+            <p><strong>Nom:</strong> {{ lastScanResult.first_name }} {{ lastScanResult.last_name }}</p>
+            <p><strong>Email:</strong> {{ lastScanResult.email }}</p>
+            <p><strong>Genre:</strong> {{ lastScanResult.gender }}</p>
+            <p><strong>Accès:</strong> {{ getAccessTypeLabel(lastScanResult.access_type) }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="error" class="alert alert-error scan-result">
+          <div class="result-icon">✗</div>
+          <h4>{{ error }}</h4>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Instructions</h3>
+        <ul class="instructions-list">
+          <li>Sélectionnez une caméra dans la liste</li>
+          <li>Cliquez sur "Démarrer le scanner"</li>
+          <li>Présentez le QR code devant la caméra</li>
+          <li>Le système vérifiera automatiquement le code</li>
+          <li>Un message de confirmation ou d'erreur s'affichera</li>
+          <li>Le scanner redémarrera automatiquement après chaque scan</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

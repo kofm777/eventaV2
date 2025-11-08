@@ -1,0 +1,445 @@
+openapi: 3.0.3
+info:
+  title: Event Access API
+  description: API for event registration, QR code generation, and access control
+  version: 1.0.0
+  contact:
+    name: Event Access Team
+    email: support@eventaccess.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: /api/v1
+    description: Production server
+
+tags:
+  - name: Registration
+    description: Participant registration endpoints
+  - name: Authentication
+    description: Admin authentication endpoints
+  - name: Admin
+    description: Admin management endpoints
+  - name: Scan
+    description: QR code scanning endpoints
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /register:
+    post:
+      tags:
+        - Registration
+      summary: Register a new participant
+      description: Register a participant for the event and generate a QR code
+      operationId: registerParticipant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scan:
+    post:
+      tags:
+        - Scan
+      summary: Scan and verify a QR code
+      description: Verify a QR code and log the scan
+      operationId: scanQrCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+      responses:
+        '200':
+          description: Scan successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResponse'
+        '400':
+          description: Invalid QR code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Admin login
+      description: Authenticate an admin user and receive a token
+      operationId: adminLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Admin logout
+      description: Logout the current admin user
+      operationId: adminLogout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current admin user
+      description: Get the currently authenticated admin user
+      operationId: getCurrentAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
+        '401':
+          description: Unauthorized
+
+  /admin/participants:
+    get:
+      tags:
+        - Admin
+      summary: List participants
+      description: Get a paginated list of participants with optional filters
+      operationId: listParticipants
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, accepted, rejected]
+        - name: access_type
+          in: query
+          schema:
+            type: string
+            enum: [foire, conference, both]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantsResponse'
+        '401':
+          description: Unauthorized
+
+  /admin/participants/{id}/accept:
+    post:
+      tags:
+        - Admin
+      summary: Accept a participant
+      description: Accept a participant's registration
+      operationId: acceptParticipant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Participant accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Participant not found
+        '401':
+          description: Unauthorized
+
+  /admin/participants/{id}/reject:
+    post:
+      tags:
+        - Admin
+      summary: Reject a participant
+      description: Reject a participant's registration
+      operationId: rejectParticipant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Participant rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Participant not found
+        '401':
+          description: Unauthorized
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - gender
+        - email
+        - access_type
+      properties:
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        gender:
+          type: string
+          enum: [Homme, Femme, Autre]
+        phone:
+          type: string
+          maxLength: 30
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        access_type:
+          type: string
+          enum: [foire, conference, both]
+
+    RegisterResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        participant:
+          $ref: '#/components/schemas/Participant'
+        qr:
+          type: string
+          description: Base64 encoded QR code image
+        message:
+          type: string
+
+
+    ScanRequest:
+      type: object
+      required:
+        - payload
+      properties:
+        payload:
+          type: string
+          description: The QR code payload to verify
+        scanner_user:
+          type: string
+          description: Optional identifier for the scanner
+
+    ScanResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        participant:
+          $ref: '#/components/schemas/Participant'
+        scan_id:
+          type: integer
+        message:
+          type: string
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        admin:
+          $ref: '#/components/schemas/Admin'
+        token:
+          type: string
+        message:
+          type: string
+
+    Admin:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ParticipantsResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        participants:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            current_page:
+              type: integer
+            last_page:
+              type: integer
+            per_page:
+              type: integer
+            total:
+              type: integer
+
+    SuccessResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+
+    ValidationError:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    Participant:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        gender:
+          type: string
+          enum: [Homme, Femme, Autre]
+        phone:
+          type: string
+        email:
+          type: string
+        access_type:
+          type: string
+          enum: [foire, conference, both]
+        status:
+          type: string
+          enum: [pending, accepted, rejected]
+        qr_token:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

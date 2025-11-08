@@ -1,0 +1,136 @@
+.scanner-header {
+  margin-bottom: 2rem;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.scanner-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.scanner-section,
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.scanner-controls {
+  margin: 1rem 0;
+}
+
+.btn-large {
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.scanner-video.active {
+  display: block;
+}
+
+.video-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.video-placeholder p:first-child {
+  font-size: 48px;
+  margin-bottom: 0.5rem;
+}
+
+.help-text {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 1rem;
+}
+
+.scan-result {
+  text-align: center;
+  padding: 2rem;
+}
+
+.result-icon {
+  font-size: 48px;
+  margin-bottom: 1rem;
+}
+
+.participant-details {
+  margin-top: 1.5rem;
+  text-align: left;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.participant-details p {
+  margin: 0.5rem 0;
+}
+
+.instructions-list {
+  list-style: none;
+  padding: 0;
+}
+
+.instructions-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.instructions-list li:last-child {
+  border-bottom: none;
+}
+
+.instructions-list li:before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #2563eb;
+  font-weight: bold;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+@media (max-width: 968px) {
+  .scanner-layout {
+    grid-template-columns: 1fr;
+  }
+}

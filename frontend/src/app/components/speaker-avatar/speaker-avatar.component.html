@@ -1,0 +1,83 @@
+<div class="avatar-container">
+  <div class="avatar-card">
+    <div class="avatar-header">
+      <h3>Message de Bienvenue</h3>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      {{ error }}
+    </div>
+
+    <div class="avatar-video-container">
+      <!-- Placeholder for future video integration -->
+      <!-- When video is added, replace this div with a video element -->
+      <div class="avatar-placeholder">
+        <div class="avatar-icon">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="60" fill="#E0E7FF"/>
+            <circle cx="60" cy="45" r="20" fill="#4F46E5"/>
+            <path d="M30 95C30 78.4315 43.4315 65 60 65C76.5685 65 90 78.4315 90 95V100H30V95Z" fill="#4F46E5"/>
+          </svg>
+        </div>
+        <p class="avatar-label">Avatar Virtuel</p>
+        <p class="avatar-note">La vidéo de l'avatar sera ajoutée ici</p>
+      </div>
+
+      <!-- Future video element (commented out for now) -->
+      <!--
+      <video 
+        class="avatar-video"
+        [class.playing]="isPlaying"
+        (loadeddata)="onVideoReady()"
+        (error)="onVideoError()"
+        muted
+        loop
+      >
+        <source src="/assets/avatar-video.mp4" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo.
+      </video>
+      -->
+
+      <div *ngIf="isSpeaking" class="speaking-indicator">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+      </div>
+    </div>
+
+    <div class="avatar-info">
+      <p *ngIf="participantName" class="participant-name">
+        <strong>{{ participantName }}</strong>
+      </p>
+      <p *ngIf="!participantName" class="no-participant">
+        En attente d'un participant...
+      </p>
+    </div>
+
+    <div class="avatar-controls">
+      <button 
+        class="btn btn-primary"
+        (click)="playWelcomeMessage()"
+        [disabled]="!participantName || isSpeaking"
+      >
+        <span *ngIf="!isSpeaking">▶ Lire le message</span>
+        <span *ngIf="isSpeaking">🔊 En cours...</span>
+      </button>
+      
+      <button 
+        class="btn btn-secondary"
+        (click)="stopSpeaking()"
+        [disabled]="!isSpeaking"
+      >
+        ⏹ Arrêter
+      </button>
+    </div>
+
+    <div class="avatar-footer">
+      <p class="info-text">
+        <strong>Note:</strong> Ce composant utilise la synthèse vocale du navigateur (Web Speech API).
+        Pour une meilleure expérience, utilisez Chrome ou Edge avec une connexion internet.
+      </p>
+    </div>
+  </div>
+</div>
