@@ -16,21 +16,17 @@ export class BadgeComponent implements OnInit {
 
   constructor(private router: Router) {}
 
-  ngOnInit(): void {
-     console.log('🎉 BadgeComponent initialized');
-    console.log('📥 Navigation state:', history.state);
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras?.state) {
-      this.qrCode = navigation.extras.state['qrCode'];
-      this.participantName = navigation.extras.state['participantName'];
-      this.emailSent = navigation.extras.state['emailSent'] ?? true;
-    }
-
-    if (!this.qrCode) {
-      // If no data, redirect to register
-      this.router.navigate(['/register']);
-    }
+ngOnInit(): void {
+  const state = history.state;
+  if (state?.qrCode) {
+    this.qrCode = state.qrCode;
+    this.participantName = state.participantName;
+    this.emailSent = state.emailSent ?? true;
+  } else {
+    console.error('No QR code in navigation state — redirecting to register');
+    this.router.navigate(['/register']);
   }
+}
 
   downloadQR(): void {
     if (!this.qrCode) return;

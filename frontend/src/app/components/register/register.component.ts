@@ -62,44 +62,29 @@ export class RegisterComponent {
     return accessType === 'both' ? 'Foire et Conférence' : 'Foire uniquement';
   }
 
-  onSubmit(): void {
+onSubmit(): void {
     this.submitted = true;
-    this.error = null;
-
-    if (this.registerForm.invalid) {
-      return;
-    }
+    if (this.registerForm.invalid) return;
 
     this.loading = true;
-    const formData: RegisterParticipantRequest = this.registerForm.value;
-
-    this.apiService.register(formData).subscribe({
+    this.apiService.register(this.registerForm.value).subscribe({
       next: (response) => {
         this.loading = false;
         if (response.ok) {
           alert(response.message);
 
-          console.log('✅ About to navigate to /badge with state:', {
-            qrCode: response.qr,
-            participantName: `${response.participant.first_name} ${response.participant.last_name}`,
-            emailSent: response.email_sent ?? true,
-          });
-
-          // ✅ Run navigation in Angular zone + await promise
+          // ✅ Safe, logged, zone-aware navigation
           this.ngZone.run(async () => {
             try {
-              const navResult = await this.router.navigate(['/badge'], {
+              const success = await this.router.navigate(['/badge'], {
                 state: {
                   qrCode: response.qr,
                   participantName: `${response.participant.first_name} ${response.participant.last_name}`,
                   emailSent: response.email_sent ?? true,
                 },
               });
-
-              console.log('🧭 Navigation result:', navResult ? 'SUCCESS' : 'FAILED');
-              if (!navResult) {
-                console.error('❌ Navigation was cancelled (e.g., by a guard or invalid route).');
-              }
+              console.log('🧭 Navigation', success ? 'succeeded' : 'failed');
+               console.log('📍 Current URL:', this.router.url);
             } catch (err) {
               console.error('💥 Navigation error:', err);
             }
@@ -108,17 +93,8 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.error =
-          err.error?.message || 'Une erreur est survenue lors de l\'inscription.';
-        if (err.error?.errors) {
-          const errors = err.error.errors;
-          Object.keys(errors).forEach((key) => {
-            const control = this.registerForm.get(key);
-            if (control) {
-              control.setErrors({ serverError: errors[key][0] });
-            }
-          });
-        }
+        this.error = err.error?.message || 'Une erreur est survenue.';
+        // ... error handling
       },
     });
   }
