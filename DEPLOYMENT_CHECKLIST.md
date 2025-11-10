@@ -105,7 +105,7 @@ make seed
 - [ ] Can print QR code
 
 #### Admin Login
-- [ ] Navigate to http://localhost:4200/login
+- [ ] Navigate to http://localhost:4200/admin/login
 - [ ] Login with admin@example.com / admin123
 - [ ] Redirects to admin dashboard
 - [ ] Participant list displays

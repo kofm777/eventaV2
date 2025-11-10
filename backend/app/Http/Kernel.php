@@ -36,12 +36,14 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\InitializeSessionKeys::class, // add here
         ],
 
         'api' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\InitializeSessionKeys::class, // add here
         ],
     ];
 
@@ -64,5 +66,11 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+    ];
+    protected $routeMiddleware = [
+        'auth' => \App\Http\Middleware\Authenticate::class,
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     ];
 }

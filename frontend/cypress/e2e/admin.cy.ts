@@ -8,21 +8,21 @@ describe('Admin Flow', () => {
   });
 
   it('should display login form', () => {
-    cy.visit('/login');
+    cy.visit('/admin/login');
     cy.contains('Connexion Administrateur').should('be.visible');
     cy.get('input[type="email"]').should('be.visible');
     cy.get('input[type="password"]').should('be.visible');
   });
 
   it('should show validation errors for empty login', () => {
-    cy.visit('/login');
+    cy.visit('/admin/login');
     cy.get('button[type="submit"]').click();
     cy.contains('L\'email est obligatoire').should('be.visible');
     cy.contains('Le mot de passe est obligatoire').should('be.visible');
   });
 
   it('should successfully login with valid credentials', () => {
-    cy.visit('/login');
+    cy.visit('/admin/login');
     cy.get('input[type="email"]').type(adminEmail);
     cy.get('input[type="password"]').type(adminPassword);
     cy.get('button[type="submit"]').click();
@@ -33,7 +33,7 @@ describe('Admin Flow', () => {
   });
 
   it('should show error for invalid credentials', () => {
-    cy.visit('/login');
+    cy.visit('/admin/login');
     cy.get('input[type="email"]').type('wrong@example.com');
     cy.get('input[type="password"]').type('wrongpassword');
     cy.get('button[type="submit"]').click();
@@ -44,7 +44,7 @@ describe('Admin Flow', () => {
   it('should protect admin routes', () => {
     cy.visit('/admin');
     // Should redirect to login
-    cy.url({ timeout: 5000 }).should('include', '/login');
+    cy.url({ timeout: 5000 }).should('include', '/admin/login');
   });
 
   it('should allow admin to view participants', () => {
@@ -76,7 +76,7 @@ describe('Admin Flow', () => {
     cy.contains('Déconnexion').click();
 
     // Should redirect to login
-    cy.url({ timeout: 5000 }).should('include', '/login');
+    cy.url({ timeout: 5000 }).should('include', '/admin/login');
   });
 
   it('should navigate to scanner page', () => {

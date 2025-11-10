@@ -12,7 +12,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent)
   },
   {
-    path: 'login',
+    path: 'badge',
+    loadComponent: () => import('./components/badge/badge.component').then(m => m.BadgeComponent)
+  },
+  {
+    path: 'admin/login',
     loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
   },
   {

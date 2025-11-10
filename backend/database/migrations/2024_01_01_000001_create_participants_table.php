@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->enum('access_type', ['foire', 'conference', 'both']);
             $table->string('qr_token', 128)->nullable();
-            $table->json('qr_payload')->nullable();
+            $table->longText('qr_payload')->nullable(); // MariaDB compatibility
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->timestamps();
 

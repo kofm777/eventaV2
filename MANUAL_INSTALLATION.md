@@ -423,7 +423,7 @@ ng serve --port 4200
 - **Frontend**: http://localhost:4200
 - **Backend API**: http://localhost:8000/api/v1
 - **Health Check**: http://localhost:8000/api/health
-- **Admin Login**: http://localhost:4200/login
+- **Admin Login**: http://localhost:4200/admin/login
   - Email: `admin@example.com`
   - Password: `admin123`
 

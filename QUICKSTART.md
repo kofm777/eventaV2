@@ -82,7 +82,7 @@ make seed
 **Health Check**: http://localhost:8000/api/health
 
 ### Admin Dashboard
-**URL**: http://localhost:4200/login
+**URL**: http://localhost:4200/admin/login
 
 **Default Credentials**:
 - Email: `admin@example.com`
@@ -116,7 +116,7 @@ make seed
 
 ### Test Admin Flow
 
-1. **Login**: http://localhost:4200/login
+1. **Login**: http://localhost:4200/admin/login
    - Email: admin@example.com
    - Password: admin123
 2. **View Participants**: You'll see Jean Dupont with status "En attente"

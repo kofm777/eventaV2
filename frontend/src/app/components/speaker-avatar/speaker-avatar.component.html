@@ -25,7 +25,7 @@
 
       <!-- Future video element (commented out for now) -->
       <!--
-      <video 
+      <video
         class="avatar-video"
         [class.playing]="isPlaying"
         (loadeddata)="onVideoReady()"
@@ -49,13 +49,19 @@
       <p *ngIf="participantName" class="participant-name">
         <strong>{{ participantName }}</strong>
       </p>
+      <p *ngIf="participantName" class="access-status" [class.accepted]="accessStatus === 'Accepted'" [class.denied]="accessStatus === 'Denied'">
+        {{ accessStatus === 'Accepted' ? '✓ Accès autorisé' : '✗ Accès refusé' }}
+      </p>
+      <p *ngIf="participantName" class="access-type">
+        {{ getAccessTypeDisplay() }}
+      </p>
       <p *ngIf="!participantName" class="no-participant">
         En attente d'un participant...
       </p>
     </div>
 
     <div class="avatar-controls">
-      <button 
+      <button
         class="btn btn-primary"
         (click)="playWelcomeMessage()"
         [disabled]="!participantName || isSpeaking"
@@ -63,8 +69,8 @@
         <span *ngIf="!isSpeaking">▶ Lire le message</span>
         <span *ngIf="isSpeaking">🔊 En cours...</span>
       </button>
-      
-      <button 
+
+      <button
         class="btn btn-secondary"
         (click)="stopSpeaking()"
         [disabled]="!isSpeaking"

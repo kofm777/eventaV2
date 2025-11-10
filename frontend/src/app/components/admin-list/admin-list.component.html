@@ -119,7 +119,22 @@
                 >
                   ✗
                 </button>
-                <span *ngIf="participant.status !== 'pending'" class="text-muted">
+                <button
+                  class="btn btn-primary btn-sm"
+                  (click)="downloadBadge(participant)"
+                  title="Télécharger le badge PDF"
+                >
+                  📄
+                </button>
+                <button
+                  *ngIf="participant.status !== 'accepted'"
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="deleteParticipant(participant)"
+                  title="Supprimer"
+                >
+                  🗑️
+                </button>
+                <span *ngIf="participant.status === 'accepted'" class="text-muted">
                   -
                 </span>
               </div>

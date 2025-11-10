@@ -115,6 +115,43 @@ export class AdminListComponent implements OnInit {
     });
   }
 
+  deleteParticipant(participant: Participant): void {
+    if (!confirm(`Supprimer définitivement ${participant.first_name} ${participant.last_name} ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    this.apiService.deleteParticipant(participant.id).subscribe({
+      next: (response) => {
+        if (response.ok) {
+          this.success = `${participant.first_name} ${participant.last_name} a été supprimé(e).`;
+          this.loadParticipants();
+          setTimeout(() => this.success = null, 3000);
+        }
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Erreur lors de la suppression.';
+        setTimeout(() => this.error = null, 3000);
+      }
+    });
+  }
+
+  downloadBadge(participant: Participant): void {
+    this.apiService.downloadBadge(participant.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `badge-${participant.first_name}-${participant.last_name}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.error = 'Erreur lors du téléchargement du badge.';
+        setTimeout(() => this.error = null, 3000);
+      }
+    });
+  }
+
   getStatusBadgeClass(status: string): string {
     switch (status) {
       case 'accepted':

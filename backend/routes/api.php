@@ -33,7 +33,7 @@ Route::prefix('v1')->group(function () {
     
     // Admin authentication
     Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login'])
+        Route::post('/admin/login', [AuthController::class, 'login'])
             ->middleware('throttle:5,1');
         
         Route::middleware('auth:sanctum')->group(function () {
@@ -48,7 +48,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/participants', [AdminController::class, 'getParticipants']);
         Route::post('/participants/{id}/accept', [AdminController::class, 'acceptParticipant']);
         Route::post('/participants/{id}/reject', [AdminController::class, 'rejectParticipant']);
-        
+        Route::delete('/participants/{id}', [AdminController::class, 'deleteParticipant']);
+        Route::get('/participants/{id}/badge', [AdminController::class, 'downloadBadge']);
+
         // Scans management
         Route::get('/scans', [ScanController::class, 'getRecentScans']);
     });

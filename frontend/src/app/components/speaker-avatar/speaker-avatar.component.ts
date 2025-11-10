@@ -12,10 +12,12 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   @Input() participantName: string = '';
   @Input() gender: string = 'Femme';
   @Input() autoPlay: boolean = true;
+  @Input() accessStatus: string = 'Accepted'; // 'Accepted' or 'Denied'
+  @Input() accessType: string = 'both'; // 'foire', 'conference', 'both'
 
   private synth: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
-  
+
   isPlaying = false;
   isSpeaking = false;
   videoReady = false;
@@ -31,7 +33,7 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadVoices();
-    
+
     // Load voices when they become available
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = () => {
@@ -53,15 +55,15 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   loadVoices() {
     const voices = this.synth.getVoices();
-    
+
     // Filter French voices
-    this.frenchVoices = voices.filter(voice => 
+    this.frenchVoices = voices.filter(voice =>
       voice.lang.startsWith('fr') || voice.lang.startsWith('FR')
     );
 
     // Select a female French voice if available
-    this.selectedVoice = this.frenchVoices.find(voice => 
-      voice.name.toLowerCase().includes('female') || 
+    this.selectedVoice = this.frenchVoices.find(voice =>
+      voice.name.toLowerCase().includes('female') ||
       voice.name.toLowerCase().includes('femme') ||
       voice.name.toLowerCase().includes('amelie') ||
       voice.name.toLowerCase().includes('thomas')
@@ -85,16 +87,38 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   generateWelcomeMessage(): string {
     const firstName = this.participantName.split(' ')[0];
-    
-    const greetings = [
-      `Bienvenue ${firstName}. Nous sommes ravis de vous accueillir à notre événement.`,
-      `Bonjour ${firstName}. Bienvenue parmi nous.`,
-      `${firstName}, bienvenue. Nous vous souhaitons un excellent événement.`,
-      `Bienvenue ${firstName}. Profitez bien de votre visite.`
-    ];
+    const honorific = this.getHonorific();
 
-    // Select a random greeting
-    return greetings[Math.floor(Math.random() * greetings.length)];
+    const statusMessage = this.accessStatus === 'Accepted'
+      ? 'Accès autorisé. Bienvenue à notre événement.'
+      : 'Accès refusé. Veuillez contacter l\'administration.';
+
+    const accessTypeMessage = this.getAccessTypeMessage();
+
+    return `${honorific} ${firstName}. ${statusMessage} ${accessTypeMessage}`;
+  }
+
+  private getHonorific(): string {
+    if (this.gender === 'Homme') {
+      return 'Monsieur';
+    } else if (this.gender === 'Femme') {
+      return 'Madame';
+    } else {
+      return 'Cher participant';
+    }
+  }
+
+  private getAccessTypeMessage(): string {
+    switch (this.accessType) {
+      case 'foire':
+        return 'Vous avez accès à la foire uniquement.';
+      case 'conference':
+        return 'Vous avez accès à la conférence uniquement.';
+      case 'both':
+        return 'Vous avez accès à la foire et à la conférence.';
+      default:
+        return '';
+    }
   }
 
   speak(text: string) {
@@ -104,7 +128,7 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     }
 
     this.utterance = new SpeechSynthesisUtterance(text);
-    
+
     // Configure utterance
     this.utterance.lang = 'fr-FR';
     this.utterance.rate = 0.9; // Slightly slower for clarity
@@ -148,6 +172,19 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   replay() {
     this.playWelcomeMessage();
+  }
+
+  getAccessTypeDisplay(): string {
+    switch (this.accessType) {
+      case 'foire':
+        return 'Foire uniquement';
+      case 'conference':
+        return 'Conférence uniquement';
+      case 'both':
+        return 'Foire et Conférence';
+      default:
+        return '';
+    }
   }
 
   // Video placeholder methods (for future video integration)

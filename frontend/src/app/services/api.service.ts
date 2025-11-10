@@ -47,7 +47,7 @@ export class ApiService {
 
   // Auth endpoints
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials);
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/admin/login`, credentials);
   }
 
   logout(): Observable<any> {
@@ -93,6 +93,19 @@ export class ApiService {
   rejectParticipant(id: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/participants/${id}/reject`, {}, {
       headers: this.getHeaders()
+    });
+  }
+
+  deleteParticipant(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/participants/${id}`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  downloadBadge(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/participants/${id}/badge`, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
     });
   }
 

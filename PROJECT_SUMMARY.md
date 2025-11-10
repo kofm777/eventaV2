@@ -161,7 +161,7 @@ make seed
 
 - **Frontend**: http://localhost:4200
 - **Backend API**: http://localhost:8000
-- **Admin Login**: http://localhost:4200/login
+- **Admin Login**: http://localhost:4200/admin/login
   - Email: admin@example.com
   - Password: admin123
 - **MailHog**: http://localhost:8025
@@ -298,7 +298,7 @@ make seed
 - `GET /api/health` - Health check
 
 ### Authentication Endpoints
-- `POST /api/v1/auth/login` - Admin login
+- `POST /api/v1/auth/admin/login` - Admin login
 - `POST /api/v1/auth/logout` - Admin logout
 - `GET /api/v1/auth/me` - Get current admin
 

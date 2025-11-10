@@ -8,7 +8,7 @@ import { SpeakerAvatarComponent } from '../speaker-avatar/speaker-avatar.compone
 @Component({
   selector: 'app-scanner',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, SpeakerAvatarComponent],
   templateUrl: './scanner.component.html',
   styleUrls: ['./scanner.component.css']
 })

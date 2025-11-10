@@ -77,7 +77,7 @@ graph TB
     
     C -->|POST /register| D[RegistrationController]
     C -->|POST /scan| E[ScanController]
-    C -->|POST /auth/login| F[AuthController]
+    C -->|POST /auth/admin/login| F[AuthController]
     C -->|GET /admin/participants| G[AdminController]
     
     D --> H[QrCodeService]
@@ -141,7 +141,7 @@ sequenceDiagram
     participant M as Mail Service
     
     A->>F: Login
-    F->>B: POST /api/v1/auth/login
+    F->>B: POST /api/v1/auth/admin/login
     B->>D: Verify credentials
     D-->>B: Admin data
     B-->>F: {ok, admin, token}

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('participant_id')->constrained()->onDelete('cascade');
             $table->timestamp('scanned_at');
             $table->string('scanner_user')->nullable();
-            $table->json('raw_payload');
+            $table->longText('raw_payload');
             $table->timestamps();
 
             $table->index(['participant_id']);

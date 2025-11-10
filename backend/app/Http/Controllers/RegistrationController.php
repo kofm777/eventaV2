@@ -44,7 +44,7 @@ class RegistrationController extends Controller
 
             // Generate QR code with HMAC signature
             $qrData = $this->qrCodeService->generateQrCode($qrPayload);
-            
+
             // Update participant with QR data
             $participant->update([
                 'qr_token' => $qrData['token'],
@@ -52,9 +52,19 @@ class RegistrationController extends Controller
             ]);
 
             // Send email with QR code
-            Mail::to($participant->email)->send(
-                new ParticipantAccessMail($participant, $qrData['qr_image'])
-            );
+            try {
+                Mail::to($participant->email)->send(
+                    new ParticipantAccessMail($participant, $qrData['qr_image'])
+                );
+                $emailSent = true;
+            } catch (\Exception $e) {
+                Log::warning('Failed to send email to participant', [
+                    'participant_id' => $participant->id,
+                    'email' => $participant->email,
+                    'error' => $e->getMessage(),
+                ]);
+                $emailSent = false;
+            }
 
             Log::info('Participant registered successfully', [
                 'participant_id' => $participant->id,
@@ -67,7 +77,8 @@ class RegistrationController extends Controller
                     'id', 'first_name', 'last_name', 'email', 'access_type', 'status'
                 ]),
                 'qr' => $qrData['qr_image'],
-                'message' => 'Inscription réussie. Un email avec votre QR code vous a été envoyé.',
+                'email_sent' => $emailSent,
+                'message' => 'Inscription réussie. ' . ($emailSent ? 'Un email avec votre QR code vous a été envoyé.' : 'Votre QR code est prêt à être téléchargé.'),
             ]);
 
         } catch (\Exception $e) {

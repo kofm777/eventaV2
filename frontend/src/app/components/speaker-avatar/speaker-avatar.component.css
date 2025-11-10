@@ -1,87 +1,70 @@
 .avatar-container {
-  max-width: 600px;
+  max-width: 400px;
   margin: 0 auto;
 }
 
 .avatar-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 24px;
-}
-
-.avatar-header {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   text-align: center;
-  margin-bottom: 1.5rem;
 }
 
 .avatar-header h3 {
-  margin: 0;
-  color: #1f2937;
+  margin: 0 0 16px 0;
+  color: #2563eb;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .avatar-video-container {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
+  margin-bottom: 16px;
 }
 
 .avatar-placeholder {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: white;
+  gap: 8px;
 }
 
 .avatar-icon {
-  margin-bottom: 1rem;
+  opacity: 0.7;
 }
 
 .avatar-label {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0.5rem 0;
-}
-
-.avatar-note {
-  font-size: 14px;
-  opacity: 0.8;
+  font-weight: 500;
+  color: #6b7280;
   margin: 0;
 }
 
-.avatar-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none;
-}
-
-.avatar-video.playing {
-  display: block;
+.avatar-note {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
 }
 
 .speaking-indicator {
   position: absolute;
-  bottom: 20px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
-  align-items: flex-end;
+  gap: 4px;
 }
 
 .wave {
-  width: 6px;
-  height: 20px;
-  background-color: white;
-  border-radius: 3px;
-  animation: wave 0.6s ease-in-out infinite;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: wave 1.5s ease-in-out infinite;
 }
 
 .wave:nth-child(2) {
@@ -94,61 +77,117 @@
 
 @keyframes wave {
   0%, 100% {
-    height: 20px;
+    transform: scale(0.8);
+    opacity: 0.5;
   }
   50% {
-    height: 40px;
+    transform: scale(1.2);
+    opacity: 1;
   }
 }
 
 .avatar-info {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  min-height: 30px;
+  margin-bottom: 16px;
 }
 
 .participant-name {
-  font-size: 20px;
+  font-size: 18px;
+  margin: 8px 0;
   color: #1f2937;
-  margin: 0;
+}
+
+.access-status {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 4px 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.access-status.accepted {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.access-status.denied {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.access-type {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 0;
 }
 
 .no-participant {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0;
+  color: #9ca3af;
+  font-style: italic;
+  margin: 8px 0;
 }
 
 .avatar-controls {
   display: flex;
-  gap: 1rem;
+  gap: 8px;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 16px;
 }
 
-.avatar-controls .btn {
-  flex: 1;
-  max-width: 200px;
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
 }
 
 .avatar-footer {
   border-top: 1px solid #e5e7eb;
-  padding-top: 1rem;
+  padding-top: 12px;
 }
 
 .info-text {
-  font-size: 13px;
+  font-size: 12px;
   color: #6b7280;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
-@media (max-width: 768px) {
-  .avatar-controls {
-    flex-direction: column;
-  }
+.alert {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  text-align: left;
+}
 
-  .avatar-controls .btn {
-    max-width: 100%;
-  }
+.alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }

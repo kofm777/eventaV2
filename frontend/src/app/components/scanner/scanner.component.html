@@ -83,6 +83,8 @@
         *ngIf="lastScanResult"
         [participantName]="lastScanResult.first_name + ' ' + lastScanResult.last_name"
         [gender]="lastScanResult.gender"
+        [accessStatus]="success ? 'Accepted' : 'Denied'"
+        [accessType]="lastScanResult.access_type"
         [autoPlay]="true"
       ></app-speaker-avatar>
 

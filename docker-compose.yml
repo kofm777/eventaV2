@@ -34,10 +34,17 @@ services:
       - APP_DEBUG=true
       - DB_HOST=mysql
       - DB_DATABASE=event_access
-      - DB_USERNAME=root
+      - DB_USERNAME=eventaccess
       - DB_PASSWORD=secret
+      # Mail config for MailHog
+      - MAIL_MAILER=smtp
       - MAIL_HOST=mailhog
       - MAIL_PORT=1025
+      - MAIL_USERNAME=
+      - MAIL_PASSWORD=
+      - MAIL_ENCRYPTION=
+      - MAIL_FROM_ADDRESS=no-reply@eventaccess.local
+      - MAIL_FROM_NAME="Event Access"
     depends_on:
       - mysql
       - mailhog

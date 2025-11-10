@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -16,6 +17,10 @@ class AuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
+        if (!session()->has('lottery')) {
+            session(['lottery' => []]);
+        }
+
         $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
@@ -37,7 +42,7 @@ class AuthController extends Controller
         // Revoke existing tokens
         $admin->tokens()->delete();
 
-        // Create new token
+        // Create new Sanctum token
         $token = $admin->createToken('admin-token')->plainTextToken;
 
         Log::info('Admin logged in successfully', [
@@ -58,7 +63,8 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        // Explicitly use Sanctum guard
+        $request->user('sanctum')->currentAccessToken()->delete();
 
         return response()->json([
             'ok' => true,
@@ -71,9 +77,11 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
+        $admin = $request->user('sanctum'); // explicitly use Sanctum
+
         return response()->json([
             'ok' => true,
-            'admin' => $request->user()->only(['id', 'name', 'email']),
+            'admin' => $admin->only(['id', 'name', 'email']),
         ]);
     }
 }

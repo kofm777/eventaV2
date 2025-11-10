@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ParticipantAccessMail;
 use App\Models\Participant;
+use App\Services\PdfBadgeService;
 use App\Services\QrCodeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\Mail;
 class AdminController extends Controller
 {
     public function __construct(
-        private QrCodeService $qrCodeService
+        private QrCodeService $qrCodeService,
+        private PdfBadgeService $pdfBadgeService
     ) {}
 
     /**
@@ -142,6 +144,70 @@ class AdminController extends Controller
             return response()->json([
                 'ok' => false,
                 'message' => 'Erreur lors du rejet du participant.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a participant
+     */
+    public function deleteParticipant(int $id): JsonResponse
+    {
+        try {
+            $participant = Participant::findOrFail($id);
+
+            // Prevent deletion of accepted participants for safety
+            if ($participant->status === 'accepted') {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Impossible de supprimer un participant accepté.',
+                ], 400);
+            }
+
+            $participant->delete();
+
+            Log::info('Participant deleted', [
+                'participant_id' => $id,
+                'email' => $participant->email,
+            ]);
+
+            return response()->json([
+                'ok' => true,
+                'message' => 'Participant supprimé avec succès.',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to delete participant', [
+                'participant_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Erreur lors de la suppression du participant.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Download PDF badge for participant
+     */
+    public function downloadBadge(int $id)
+    {
+        try {
+            $participant = Participant::findOrFail($id);
+
+            return $this->pdfBadgeService->downloadBadge($participant);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to generate badge', [
+                'participant_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Erreur lors de la génération du badge.',
             ], 500);
         }
     }

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -16,8 +17,8 @@ import { AuthService } from './services/auth.service';
               <a routerLink="/">Event Access</a>
             </h1>
             <nav class="nav">
-              <a routerLink="/register" class="nav-link">Inscription</a>
-              <a *ngIf="!isAuthenticated" routerLink="/login" class="nav-link">Admin</a>
+              <a *ngIf="currentUrl !== '/admin/login'" routerLink="/register" class="nav-link">Inscription</a>
+              <a *ngIf="!isAuthenticated && currentUrl !== '/register'" routerLink="/admin/login" class="nav-link">Admin</a>
               <div *ngIf="isAuthenticated" class="admin-menu">
                 <a routerLink="/admin" class="nav-link">Participants</a>
                 <a routerLink="/admin/scanner" class="nav-link">Scanner</a>
@@ -121,8 +122,9 @@ import { AuthService } from './services/auth.service';
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   isAuthenticated = false;
+  currentUrl = '';
 
   constructor(
     private authService: AuthService,
@@ -133,8 +135,16 @@ export class AppComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.currentUrl = event.url;
+      });
+  }
+
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/admin/login']);
   }
 }

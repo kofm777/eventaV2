@@ -26,6 +26,7 @@ export interface RegisterResponse {
   ok: boolean;
   participant: Participant;
   qr: string;
+  email_sent?: boolean;
   message: string;
 }
 
