@@ -9,6 +9,7 @@ export interface Participant {
   status: 'pending' | 'accepted' | 'rejected';
   qr_token?: string;
   qr_payload?: any;
+  qr_image?: string;
   created_at?: string;
   updated_at?: string;
 }

@@ -19,7 +19,7 @@ import { filter } from 'rxjs/operators';
             <nav class="nav">
               <a *ngIf="currentUrl !== '/admin/login'" routerLink="/register" class="nav-link">Inscription</a>
               <a *ngIf="!isAuthenticated && currentUrl !== '/register'" routerLink="/admin/login" class="nav-link">Admin</a>
-              <div *ngIf="isAuthenticated" class="admin-menu">
+              <div *ngIf="isAuthenticated && currentUrl !== '/register'" class="admin-menu">
                 <a routerLink="/admin" class="nav-link">Participants</a>
                 <a routerLink="/admin/scanner" class="nav-link">Scanner</a>
                 <button (click)="logout()" class="btn btn-secondary btn-sm">Déconnexion</button>

@@ -19,7 +19,8 @@ class ParticipantAccessMail extends Mailable
      */
     public function __construct(
         public Participant $participant,
-        public ?string $qrImage = null
+        public ?string $qrImage = null,
+        public string $emailType = 'access'
     ) {}
 
     /**
@@ -27,11 +28,14 @@ class ParticipantAccessMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = match ($this->participant->status) {
-            'pending' => 'Demande d\'accès en attente - Event Access',
-            'accepted' => 'Accès confirmé - Bienvenue à Event Access',
-            'rejected' => 'Accès refusé - Event Access',
-            default => 'Event Access - Mise à jour de votre inscription',
+        $subject = match ($this->emailType) {
+            'deleted' => 'Inscription annulée - Event Access',
+            default => match ($this->participant->status) {
+                'pending' => 'Demande d\'accès en attente - Event Access',
+                'accepted' => 'Accès confirmé - Bienvenue à Event Access',
+                'rejected' => 'Accès refusé - Event Access',
+                default => 'Event Access - Mise à jour de votre inscription',
+            },
         };
 
         return new Envelope(
@@ -49,6 +53,7 @@ class ParticipantAccessMail extends Mailable
             with: [
                 'participant' => $this->participant,
                 'qrImage' => $this->qrImage,
+                'emailType' => $this->emailType,
             ],
         );
     }

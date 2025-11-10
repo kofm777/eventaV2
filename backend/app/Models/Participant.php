@@ -24,6 +24,7 @@ class Participant extends Model
         'access_type',
         'qr_token',
         'qr_payload',
+        'qr_image',
         'status',
     ];
 

@@ -80,7 +80,13 @@
     <div class="content">
         <h2>Bonjour {{ $participant->first_name }} {{ $participant->last_name }},</h2>
 
-        @if($participant->status === 'pending')
+        @if($emailType === 'deleted')
+            <div class="status-rejected">
+                <strong>Inscription annulée</strong>
+            </div>
+            <p>Nous vous informons que votre inscription à l'événement a été annulée par l'administrateur.</p>
+            <p>Si vous pensez qu'il s'agit d'une erreur, n'hésitez pas à nous contacter.</p>
+        @elseif($participant->status === 'pending')
             <div class="status-pending">
                 <strong>Votre demande d'accès est en attente de validation</strong>
             </div>
@@ -91,7 +97,7 @@
                 <strong>Accès confirmé — Bienvenue !</strong>
             </div>
             <p>Félicitations ! Votre inscription a été acceptée. Vous pouvez maintenant accéder à l'événement.</p>
-            
+
             @if($qrImage)
                 <div class="qr-container">
                     <h3>Votre QR Code d'accès</h3>

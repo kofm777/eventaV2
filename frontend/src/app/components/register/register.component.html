@@ -99,20 +99,25 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="access_type">Type d'accès *</label>
-          <select
-            id="access_type"
-            class="form-control"
-            formControlName="access_type"
-            [class.error]="submitted && f['access_type'].errors"
-          >
-            <option value="">Sélectionnez...</option>
-            <option value="foire">Foire uniquement</option>
-            <option value="conference">Conférence uniquement</option>
-            <option value="both">Foire et Conférence</option>
-          </select>
-          <div *ngIf="submitted && f['access_type'].errors" class="error-message">
-            <span *ngIf="f['access_type'].errors['required']">Le type d'accès est obligatoire</span>
+          <label class="form-label">Type d'accès *</label>
+          <div class="access-type-selection">
+            <div class="access-option">
+              <span class="access-label">Foire</span>
+              <span class="access-description">(accès par défaut)</span>
+            </div>
+            <div class="access-option">
+              <input
+                type="checkbox"
+                id="conference_access"
+                [formControl]="conferenceAccess"
+              />
+              <label for="conference_access" class="checkbox-label">
+                Ajouter l'accès à la Conférence
+              </label>
+            </div>
+          </div>
+          <div class="access-summary">
+            <strong>Accès sélectionné:</strong> {{ getSelectedAccessType() }}
           </div>
         </div>
 

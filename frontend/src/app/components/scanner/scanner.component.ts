@@ -102,22 +102,22 @@ export class ScannerComponent implements OnInit, OnDestroy {
         if (response.ok) {
           this.success = response.message;
           this.lastScanResult = response.participant;
-          
+
           // Play success sound (optional)
           this.playSuccessSound();
-          
-          // Auto-restart scanning after 3 seconds
+
+          // Keep the result displayed - don't auto-clear
+          // Auto-restart scanning after 3 seconds but keep result
           setTimeout(() => {
-            this.success = null;
-            this.lastScanResult = null;
             if (this.selectedCamera) {
               this.startScanning();
             }
-          }, 3000);
+          }, 100000);
         } else {
           this.error = response.message;
+          this.lastScanResult = null;
           this.playErrorSound();
-          
+
           // Auto-restart scanning after 2 seconds
           setTimeout(() => {
             this.error = null;
@@ -129,8 +129,9 @@ export class ScannerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error = err.error?.message || 'Erreur lors de la vérification du QR code.';
+        this.lastScanResult = null;
         this.playErrorSound();
-        
+
         // Auto-restart scanning after 2 seconds
         setTimeout(() => {
           this.error = null;
@@ -150,6 +151,28 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
     this.processScan(this.manualQrCode);
     this.manualQrCode = '';
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Use ZXing to decode the QR code from the image
+        this.codeReader.decodeFromImage(img).then(result => {
+          const qrCode = result.getText();
+          this.processScan(qrCode);
+        }).catch(err => {
+          this.error = 'Impossible de lire le QR code dans l\'image.';
+          setTimeout(() => this.error = null, 1000000);
+        });
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 
   playSuccessSound() {

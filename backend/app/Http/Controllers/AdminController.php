@@ -72,7 +72,10 @@ class AdminController extends Controller
 
             // Regenerate QR code with updated status
             $qrData = $this->qrCodeService->generateQrCode($participant->qr_payload);
-            
+
+            // Update participant with new QR image
+            $participant->update(['qr_image' => $qrData['qr_image']]);
+
             // Send confirmation email
             Mail::to($participant->email)->send(
                 new ParticipantAccessMail($participant, $qrData['qr_image'])
@@ -156,12 +159,17 @@ class AdminController extends Controller
         try {
             $participant = Participant::findOrFail($id);
 
-            // Prevent deletion of accepted participants for safety
-            if ($participant->status === 'accepted') {
-                return response()->json([
-                    'ok' => false,
-                    'message' => 'Impossible de supprimer un participant accepté.',
-                ], 400);
+            // Send deletion notification email
+            try {
+                Mail::to($participant->email)->send(
+                    new ParticipantAccessMail($participant, null, 'deleted')
+                );
+            } catch (\Exception $e) {
+                Log::warning('Failed to send deletion email to participant', [
+                    'participant_id' => $participant->id,
+                    'email' => $participant->email,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             $participant->delete();

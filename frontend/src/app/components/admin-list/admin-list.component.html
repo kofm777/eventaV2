@@ -31,7 +31,6 @@
           <select class="form-control" [(ngModel)]="accessTypeFilter" (change)="applyFilters()">
             <option value="">Tous</option>
             <option value="foire">Foire</option>
-            <option value="conference">Conférence</option>
             <option value="both">Foire + Conférence</option>
           </select>
         </div>
@@ -82,6 +81,8 @@
             <th>Téléphone</th>
             <th>Type d'accès</th>
             <th>Statut</th>
+            <th>QR Token</th>
+            <th>QR Image</th>
             <th>Date</th>
             <th>Actions</th>
           </tr>
@@ -99,6 +100,23 @@
               <span class="badge" [ngClass]="getStatusBadgeClass(participant.status)">
                 {{ getStatusLabel(participant.status) }}
               </span>
+            </td>
+            <td>
+              <span *ngIf="participant.qr_token" class="qr-token" title="{{ participant.qr_token }}" (click)="copyToClipboard(participant.qr_token)">
+                {{ participant.qr_token.substring(0, 20) }}...
+              </span>
+              <span *ngIf="!participant.qr_token">-</span>
+            </td>
+            <td>
+              <div class="qr-image-container" *ngIf="participant.qr_image; else noQrImage">
+                <img [src]="'data:image/png;base64,' + participant.qr_image" alt="QR Code" class="qr-image-preview" />
+                <div class="qr-overlay">
+                  <button class="btn btn-secondary btn-sm" (click)="downloadQrImage(participant)">Télécharger</button>
+                </div>
+              </div>
+              <ng-template #noQrImage>
+                <span>-</span>
+              </ng-template>
             </td>
             <td>{{ participant.created_at | date:'short' }}</td>
             <td>
@@ -127,16 +145,12 @@
                   📄
                 </button>
                 <button
-                  *ngIf="participant.status !== 'accepted'"
                   class="btn btn-outline-danger btn-sm"
                   (click)="deleteParticipant(participant)"
                   title="Supprimer"
                 >
                   🗑️
                 </button>
-                <span *ngIf="participant.status === 'accepted'" class="text-muted">
-                  -
-                </span>
               </div>
             </td>
           </tr>

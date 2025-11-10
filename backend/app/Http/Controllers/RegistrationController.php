@@ -31,7 +31,7 @@ class RegistrationController extends Controller
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'access_type' => $request->access_type,
-                'status' => 'pending',
+                'status' => 'accepted', // Always accepted
             ]);
 
             // Generate QR code payload
@@ -49,6 +49,7 @@ class RegistrationController extends Controller
             $participant->update([
                 'qr_token' => $qrData['token'],
                 'qr_payload' => $qrPayload,
+                'qr_image' => $qrData['qr_image'],
             ]);
 
             // Send email with QR code

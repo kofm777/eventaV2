@@ -1,0 +1,16 @@
+[2025-11-10 15:35:36] local.INFO: Successful scan {"scan_id":1,"participant_id":1,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 15:35:53] local.INFO: Successful scan {"scan_id":2,"participant_id":1,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 15:36:48] local.INFO: Successful scan {"scan_id":3,"participant_id":1,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 15:37:34] local.INFO: Successful scan {"scan_id":4,"participant_id":1,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 15:37:51] local.INFO: Successful scan {"scan_id":5,"participant_id":1,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 15:38:36] local.INFO: Successful scan {"scan_id":6,"participant_id":1,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 16:22:47] local.INFO: Successful scan {"scan_id":7,"participant_id":3,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 16:23:31] local.INFO: Successful scan {"scan_id":8,"participant_id":3,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 16:26:43] local.INFO: Successful scan {"scan_id":9,"participant_id":3,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 16:26:54] local.INFO: Successful scan {"scan_id":10,"participant_id":3,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 17:01:07] local.INFO: Successful scan {"scan_id":11,"participant_id":6,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 17:03:16] local.INFO: Successful scan {"scan_id":12,"participant_id":6,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
+[2025-11-10 17:30:47] local.INFO: Successful scan {"scan_id":13,"participant_id":8,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 17:31:33] local.INFO: Successful scan {"scan_id":14,"participant_id":8,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 17:32:20] local.INFO: Successful scan {"scan_id":15,"participant_id":8,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-10 17:33:21] local.INFO: Successful scan {"scan_id":16,"participant_id":8,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 

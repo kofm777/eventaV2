@@ -17,6 +17,8 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   private synth: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
+  private voicesLoaded = false;
+  private retryTimeout: any;
 
   isPlaying = false;
   isSpeaking = false;
@@ -32,80 +34,109 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadVoices();
-
-    // Load voices when they become available
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = () => {
-        this.loadVoices();
-      };
-    }
+    this.initVoices();
 
     if (this.autoPlay && this.participantName) {
-      // Delay auto-play to ensure voices are loaded
+      // Delay auto-play slightly to ensure voices are ready
       setTimeout(() => {
-        this.playWelcomeMessage();
-      }, 500);
+        // Avoid browser auto-play block by checking if window has focus
+        if (document.hasFocus()) {
+          this.playWelcomeMessage();
+        } else {
+          console.warn('TTS autoplay deferred until user interaction.');
+          const handler = () => {
+            this.playWelcomeMessage();
+            document.removeEventListener('click', handler);
+          };
+          document.addEventListener('click', handler);
+        }
+      }, 800);
     }
   }
 
   ngOnDestroy() {
     this.stopSpeaking();
+    if (this.retryTimeout) clearTimeout(this.retryTimeout);
   }
 
-  loadVoices() {
+  /** Initialize and load French voices */
+  private initVoices() {
+    this.loadVoices();
+
+    // Re-load when voices become available (Chrome quirk)
+    if (typeof speechSynthesis !== 'undefined') {
+      speechSynthesis.onvoiceschanged = () => {
+        this.loadVoices();
+      };
+    }
+  }
+
+  /** Load and select a suitable voice */
+  private loadVoices() {
     const voices = this.synth.getVoices();
 
-    // Filter French voices
-    this.frenchVoices = voices.filter(voice =>
-      voice.lang.startsWith('fr') || voice.lang.startsWith('FR')
+    if (!voices.length) {
+      // Retry loading until available
+      setTimeout(() => this.loadVoices(), 300);
+      return;
+    }
+
+    this.frenchVoices = voices.filter(v =>
+      v.lang.toLowerCase().startsWith('fr')
     );
 
-    // Select a female French voice if available
-    this.selectedVoice = this.frenchVoices.find(voice =>
-      voice.name.toLowerCase().includes('female') ||
-      voice.name.toLowerCase().includes('femme') ||
-      voice.name.toLowerCase().includes('amelie') ||
-      voice.name.toLowerCase().includes('thomas')
-    ) || this.frenchVoices[0] || voices[0];
+    this.selectedVoice =
+      this.frenchVoices.find(v =>
+        ['amelie', 'female', 'femme', 'thomas'].some(k =>
+          v.name.toLowerCase().includes(k)
+        )
+      ) || this.frenchVoices[0] || voices[0];
 
-    console.log('Available French voices:', this.frenchVoices);
-    console.log('Selected voice:', this.selectedVoice);
+    this.voicesLoaded = true;
+
+    console.log('Loaded voices:', this.frenchVoices);
+    console.log('Selected voice:', this.selectedVoice?.name);
   }
 
-  playWelcomeMessage() {
+  /** Plays the welcome message */
+  async playWelcomeMessage() {
     if (!this.participantName) {
       this.error = 'Aucun nom de participant fourni.';
       return;
     }
 
-    this.stopSpeaking();
+    // Wait until voices are loaded
+    if (!this.voicesLoaded) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+    }
 
     const message = this.generateWelcomeMessage();
-    this.speak(message);
+    await this.speak(message);
   }
 
-  generateWelcomeMessage(): string {
-    const firstName = this.participantName.split(' ')[0];
+  /** Builds the personalized message */
+  private generateWelcomeMessage(): string {
+    const fullName = this.participantName.trim();
     const honorific = this.getHonorific();
 
-    const statusMessage = this.accessStatus === 'Accepted'
-      ? 'Accès autorisé. Bienvenue à notre événement.'
-      : 'Accès refusé. Veuillez contacter l\'administration.';
+    const statusMessage =
+      this.accessStatus === 'Accepted'
+        ? 'Accès autorisé. Bienvenue à notre événement.'
+        : 'Accès refusé. Veuillez contacter l\'administration.';
 
     const accessTypeMessage = this.getAccessTypeMessage();
+    const qrMessage =
+      this.accessStatus === 'Accepted'
+        ? 'Votre code QR a été scanné avec succès.'
+        : '';
 
-    return `${honorific} ${firstName}. ${statusMessage} ${accessTypeMessage}`;
+    return `Cher participant ${honorific} ${fullName}. ${statusMessage} ${accessTypeMessage} ${qrMessage}`.trim();
   }
 
   private getHonorific(): string {
-    if (this.gender === 'Homme') {
-      return 'Monsieur';
-    } else if (this.gender === 'Femme') {
-      return 'Madame';
-    } else {
-      return 'Cher participant';
-    }
+    if (this.gender === 'Homme') return 'Monsieur';
+    if (this.gender === 'Femme') return 'Madame';
+    return '';
   }
 
   private getAccessTypeMessage(): string {
@@ -121,23 +152,25 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     }
   }
 
-  speak(text: string) {
-    if (!this.synth) {
+  /** Robust speech synthesis function */
+  private async speak(text: string) {
+    if (!('speechSynthesis' in window)) {
       this.error = 'La synthèse vocale n\'est pas supportée par votre navigateur.';
       return;
     }
 
-    this.utterance = new SpeechSynthesisUtterance(text);
+    // Prevent overlap
+    if (this.synth.speaking) {
+      this.synth.cancel();
+      await new Promise(r => setTimeout(r, 150));
+    }
 
-    // Configure utterance
+    this.utterance = new SpeechSynthesisUtterance(text);
     this.utterance.lang = 'fr-FR';
-    this.utterance.rate = 0.9; // Slightly slower for clarity
+    this.utterance.rate = 0.85;
     this.utterance.pitch = 1.0;
     this.utterance.volume = 1.0;
-
-    if (this.selectedVoice) {
-      this.utterance.voice = this.selectedVoice;
-    }
+    if (this.selectedVoice) this.utterance.voice = this.selectedVoice;
 
     // Event handlers
     this.utterance.onstart = () => {
@@ -153,21 +186,26 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
     this.utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event);
-      this.error = 'Erreur lors de la lecture du message.';
       this.isSpeaking = false;
       this.isPlaying = false;
+
+      if (event.error === 'interrupted') {
+        console.warn('Speech interrupted, retrying...');
+        this.retryTimeout = setTimeout(() => this.speak(text), 800);
+      } else {
+        this.error = 'Erreur lors de la lecture du message.';
+      }
     };
 
-    // Speak
     this.synth.speak(this.utterance);
   }
 
   stopSpeaking() {
-    if (this.synth) {
+    if (this.synth.speaking) {
       this.synth.cancel();
-      this.isSpeaking = false;
-      this.isPlaying = false;
     }
+    this.isSpeaking = false;
+    this.isPlaying = false;
   }
 
   replay() {
@@ -187,7 +225,7 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Video placeholder methods (for future video integration)
+  // Video placeholder methods (for avatar video integration)
   onVideoReady() {
     this.videoReady = true;
   }

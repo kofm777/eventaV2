@@ -202,4 +202,29 @@ export class AdminListComponent implements OnInit {
       this.loadParticipants();
     }
   }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('QR Token copié dans le presse-papiers!');
+    }).catch(err => {
+      console.error('Erreur lors de la copie:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('QR Token copié dans le presse-papiers!');
+    });
+  }
+
+  downloadQrImage(participant: any): void {
+    if (!participant.qr_image) return;
+
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${participant.qr_image}`;
+    link.download = `qr-code-${participant.first_name}-${participant.last_name}.png`;
+    link.click();
+  }
 }
