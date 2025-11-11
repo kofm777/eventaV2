@@ -75,8 +75,8 @@
         }
 
         .qr-code {
-            max-width: 80px;
-            max-height: 80px;
+            max-width: 200px;
+            max-height: 200px;
             margin: 4px 0;
         }
 

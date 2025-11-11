@@ -4,3 +4,7 @@
 [2025-11-11 20:10:52] local.INFO: Successful scan {"scan_id":25,"participant_id":15,"participant_name":"oussema jebali","access_type":"foire","scanner_user":null} 
 [2025-11-11 21:07:15] local.INFO: Successful scan {"scan_id":26,"participant_id":16,"participant_name":"KJDGFJSDF jebali","access_type":"both","scanner_user":null} 
 [2025-11-11 21:20:06] local.INFO: Successful scan {"scan_id":27,"participant_id":16,"participant_name":"KJDGFJSDF jebali","access_type":"both","scanner_user":null} 
+[2025-11-11 22:40:13] local.INFO: Successful scan {"scan_id":28,"participant_id":16,"participant_name":"KJDGFJSDF jebali","access_type":"both","scanner_user":null} 
+[2025-11-11 22:42:50] local.INFO: Successful scan {"scan_id":29,"participant_id":16,"participant_name":"KJDGFJSDF jebali","access_type":"both","scanner_user":null} 
+[2025-11-11 23:37:21] local.INFO: Successful scan {"scan_id":30,"participant_id":16,"participant_name":"KJDGFJSDF jebali","access_type":"both","scanner_user":null} 
+[2025-11-11 23:38:05] local.INFO: Successful scan {"scan_id":31,"participant_id":18,"participant_name":"fawzi jebali","access_type":"foire","scanner_user":null} 

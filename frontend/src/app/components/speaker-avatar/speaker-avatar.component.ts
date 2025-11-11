@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  NgZone
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,6 +19,7 @@ import { CommonModule } from '@angular/common';
 export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   @ViewChild('silentVideo', { static: false }) silentVideo!: ElementRef<HTMLVideoElement>;
   @ViewChild('speakingVideo', { static: false }) speakingVideo!: ElementRef<HTMLVideoElement>;
+
   @Input() participantName: string = '';
   @Input() gender: string = 'Femme';
   @Input() autoPlay: boolean = true;
@@ -27,16 +36,24 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   videoReady = false;
   error: string | null = null;
 
-  // TTS Configuration
-  private frenchVoices: SpeechSynthesisVoice[] = [];
+  private englishVoices: SpeechSynthesisVoice[] = [];
   private selectedVoice: SpeechSynthesisVoice | null = null;
 
-  constructor() {
+  constructor(private ngZone: NgZone) {
     this.synth = window.speechSynthesis;
   }
 
-    ngOnInit() {
+  ngOnInit() {
     this.initVoices();
+
+    // Start silent video
+    if (this.silentVideo) {
+      this.silentVideo.nativeElement.play().catch(e =>
+        console.warn('Silent video play failed:', e)
+      );
+    }
+
+    // Auto start welcome if participant is set
     if (this.autoPlay && this.participantName) {
       setTimeout(() => {
         if (document.hasFocus()) {
@@ -57,11 +74,10 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     if (this.retryTimeout) clearTimeout(this.retryTimeout);
   }
 
-  /** Initialize and load French voices */
+  /** Initialize and load English voices */
   private initVoices() {
     this.loadVoices();
 
-    // Re-load when voices become available (Chrome quirk)
     if (typeof speechSynthesis !== 'undefined') {
       speechSynthesis.onvoiceschanged = () => {
         this.loadVoices();
@@ -69,41 +85,39 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Load and select a suitable voice */
+  /** Load and select English female voice */
   private loadVoices() {
     const voices = this.synth.getVoices();
 
     if (!voices.length) {
-      // Retry loading until available
       setTimeout(() => this.loadVoices(), 300);
       return;
     }
 
-    this.frenchVoices = voices.filter(v =>
-      v.lang.toLowerCase().startsWith('fr')
+    this.englishVoices = voices.filter(v =>
+      v.lang.toLowerCase().startsWith('en')
     );
 
     this.selectedVoice =
-      this.frenchVoices.find(v =>
-        ['amelie', 'female', 'femme', 'thomas'].some(k =>
+      this.englishVoices.find(v =>
+        ['female', 'woman', 'zira', 'samantha', 'google uk english female', 'google us english'].some(k =>
           v.name.toLowerCase().includes(k)
         )
-      ) || this.frenchVoices[0] || voices[0];
+      ) || this.englishVoices[0] || voices[0];
 
     this.voicesLoaded = true;
 
-    console.log('Loaded voices:', this.frenchVoices);
+    console.log('Loaded voices:', this.englishVoices.map(v => v.name));
     console.log('Selected voice:', this.selectedVoice?.name);
   }
 
-  /** Plays the welcome message */
+  /** Play personalized welcome message */
   async playWelcomeMessage() {
     if (!this.participantName) {
-      this.error = 'Aucun nom de participant fourni.';
+      this.error = 'No participant name provided.';
       return;
     }
 
-    // Wait until voices are loaded
     if (!this.voicesLoaded) {
       await new Promise(resolve => setTimeout(resolve, 800));
     }
@@ -112,49 +126,48 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     await this.speak(message);
   }
 
-  /** Builds the personalized message */
+  /** Build English welcome message */
   private generateWelcomeMessage(): string {
     const fullName = this.participantName.trim();
     const honorific = this.getHonorific();
 
     const statusMessage =
       this.accessStatus === 'Accepted'
-        ? 'Accès autorisé. Bienvenue à notre événement.'
-        : 'Accès refusé. Veuillez contacter l\'administration.';
+        ? 'Access granted. Welcome to our event.'
+        : 'Access denied. Please contact the administration.';
 
     const accessTypeMessage = this.getAccessTypeMessage();
     const qrMessage =
       this.accessStatus === 'Accepted'
-        ? 'Votre code QR a été scanné avec succès.'
+        ? 'Your QR code has been successfully scanned.'
         : '';
 
-    return `Cher participant ${honorific} ${fullName}. ${statusMessage} ${accessTypeMessage} ${qrMessage}`.trim();
+    return `Dear ${honorific} ${fullName}, ${statusMessage} ${accessTypeMessage} ${qrMessage}`.trim();
   }
 
   private getHonorific(): string {
-    if (this.gender === 'Homme') return 'Monsieur';
-    if (this.gender === 'Femme') return 'Madame';
+    if (this.gender === 'Homme') return 'Mr.';
+    if (this.gender === 'Femme') return 'Ms.';
     return '';
   }
 
   private getAccessTypeMessage(): string {
     switch (this.accessType) {
       case 'foire':
-        return 'Vous avez accès à la foire uniquement.';
+        return 'You have access to the fair only.';
       case 'conference':
-        return 'Vous avez accès à la conférence uniquement.';
+        return 'You have access to the conference only.';
       case 'both':
-        return 'Vous avez accès à la foire et à la conférence.';
+        return 'You have access to both the fair and the conference.';
       default:
         return '';
     }
   }
 
-  /** Robust speech synthesis function */
-  /** Robust speech synthesis function */
+  /** Speak using selected English voice */
   private async speak(text: string) {
     if (!('speechSynthesis' in window)) {
-      this.error = 'La synthèse vocale n\'est pas supportée.';
+      this.error = 'Speech synthesis not supported.';
       return;
     }
 
@@ -164,21 +177,28 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     }
 
     this.utterance = new SpeechSynthesisUtterance(text);
-    this.utterance.lang = 'fr-FR';
-    this.utterance.rate = 0.85;
-    this.utterance.pitch = 1.0;
+    this.utterance.lang = 'en-US';
+    this.utterance.rate = 0.95;
+    this.utterance.pitch = 1.05;
     this.utterance.volume = 1.0;
+
     if (this.selectedVoice) this.utterance.voice = this.selectedVoice;
 
     this.utterance.onstart = () => {
-      this.isSpeaking = true;  // 👉 Shows speaking avatar
-      this.isPlaying = true;
-      this.error = null;
+      this.ngZone.run(() => {
+        this.isSpeaking = true;
+        this.isPlaying = true;
+        this.error = null;
+        this.switchToSpeakingAvatar();
+      });
     };
 
     this.utterance.onend = () => {
-      this.isSpeaking = false; // 👉 Returns to silent avatar
-      this.isPlaying = false;
+      this.ngZone.run(() => {
+        this.isSpeaking = false;
+        this.isPlaying = false;
+        this.switchToSilentAvatar();
+      });
     };
 
     this.utterance.onerror = (event) => {
@@ -188,11 +208,33 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
       if (event.error === 'interrupted') {
         this.retryTimeout = setTimeout(() => this.speak(text), 800);
       } else {
-        this.error = 'Erreur TTS.';
+        this.error = 'TTS error.';
       }
     };
 
     this.synth.speak(this.utterance);
+  }
+
+  /** Avatar video switching */
+  private switchToSpeakingAvatar() {
+    const silent = this.silentVideo?.nativeElement;
+    const speaking = this.speakingVideo?.nativeElement;
+
+    if (silent) silent.pause();
+    if (speaking) {
+      speaking.currentTime = 0;
+      speaking.play().catch(e => console.warn('Speaking video play failed:', e));
+    }
+  }
+
+  private switchToSilentAvatar() {
+    const silent = this.silentVideo?.nativeElement;
+    const speaking = this.speakingVideo?.nativeElement;
+
+    if (speaking) speaking.pause();
+    if (silent) {
+      silent.play().catch(e => console.warn('Silent video resume failed:', e));
+    }
   }
 
   stopSpeaking() {
@@ -210,22 +252,21 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   getAccessTypeDisplay(): string {
     switch (this.accessType) {
       case 'foire':
-        return 'Foire uniquement';
+        return 'Fair only';
       case 'conference':
-        return 'Conférence uniquement';
+        return 'Conference only';
       case 'both':
-        return 'Foire et Conférence';
+        return 'Fair and Conference';
       default:
         return '';
     }
   }
 
-  // Video placeholder methods (for avatar video integration)
   onVideoReady() {
     this.videoReady = true;
   }
 
   onVideoError() {
-    this.error = 'Erreur vidéo.';
+    this.error = 'Video error.';
   }
 }

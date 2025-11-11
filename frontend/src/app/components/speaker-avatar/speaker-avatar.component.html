@@ -10,34 +10,24 @@
 
   <div class="avatar-video-container">
   <!-- Silent Avatar (default, loops) -->
-  <video
-    #silentVideo
-    class="avatar-video"
-    [class.hidden]="isSpeaking"
-    [muted]="true"
-    [loop]="true"
-    [autoplay]="true"
-    (loadeddata)="onVideoReady()"
-    (error)="onVideoError()"
-  >
-    <source src="assets/avatar/videos/silent_avatar.mp4" type="video/mp4" />
-    Votre navigateur ne supporte pas la vidéo.
-  </video>
+<video #silentVideo
+  class="avatar-video"
+  [class.hidden]="isSpeaking"
+  muted
+  loop
+  (loadeddata)="onVideoReady()"
+  (error)="onVideoError()">
+  <source src="assets/avatar/videos/silent_avatar.mp4" type="video/mp4" />
+</video>
 
-  <!-- Speaking Avatar (only during speech) -->
-  <video
-    #speakingVideo
-    class="avatar-video"
-    [class.hidden]="!isSpeaking"
-    [muted]="true"
-    [autoplay]="true"
-    [loop]="true"
-   (loadeddata)="onVideoReady()"
-    (error)="onVideoError()"
-  >
-    <source src="assets/avatar/videos/speaking_avatar.mp4" type="video/mp4" />
-    Votre navigateur ne supporte pas la vidéo.
-  </video>
+<video #speakingVideo
+  class="avatar-video"
+  [class.hidden]="!isSpeaking"
+  muted
+  loop
+  (error)="onVideoError()">
+  <source src="assets/avatar/videos/speaking_avatar.mp4" type="video/mp4" />
+</video>
 
   <div *ngIf="isSpeaking" class="speaking-indicator">
     <div class="wave"></div>
