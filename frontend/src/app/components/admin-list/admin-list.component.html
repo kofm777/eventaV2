@@ -1,4 +1,4 @@
-<div class="container">
+<div class="fullscreen-container">
   <div class="admin-header">
     <h2>Gestion des Participants</h2>
     <p class="subtitle">Accepter ou rejeter les inscriptions</p>
@@ -77,6 +77,7 @@
           <tr>
             <th>Nom</th>
             <th>Email</th>
+            <th>Nom de l'entreprise</th>
             <th>Genre</th>
             <th>Téléphone</th>
             <th>Type d'accès</th>
@@ -93,6 +94,10 @@
               <strong>{{ participant.first_name }} {{ participant.last_name }}</strong>
             </td>
             <td>{{ participant.email }}</td>
+             <td>
+              <strong>{{ participant.company_name }}</strong>
+            </td>
+            
             <td>{{ participant.gender }}</td>
             <td>{{ participant.phone || '-' }}</td>
             <td>{{ getAccessTypeLabel(participant.access_type) }}</td>

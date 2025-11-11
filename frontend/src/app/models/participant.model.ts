@@ -2,6 +2,7 @@ export interface Participant {
   id: number;
   first_name: string;
   last_name: string;
+  company_name: string;
   gender: 'Homme' | 'Femme' | 'Autre';
   phone?: string;
   email: string;
@@ -17,6 +18,7 @@ export interface Participant {
 export interface RegisterParticipantRequest {
   first_name: string;
   last_name: string;
+  company_name: string;
   gender: 'Homme' | 'Femme' | 'Autre';
   phone?: string;
   email: string;

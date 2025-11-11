@@ -7106,3 +7106,8 @@ Did you mean one of these?
 [2025-11-10 18:21:01] local.INFO: Participant registered successfully {"participant_id":10,"email":"oussema1jebal@gmjdfgshfdsdfsdfail.com"} 
 [2025-11-10 19:35:02] local.INFO: Participant registered successfully {"participant_id":11,"email":"oussema1jebal@ghfgdhqsfdgqsail.com"} 
 [2025-11-10 19:59:36] local.INFO: Participant registered successfully {"participant_id":12,"email":"oussema1jebal@gmhhsdgfhdfail.com"} 
+[2025-11-10 20:12:28] local.INFO: Participant registered successfully {"participant_id":13,"email":"oussema1jebal@gmdtrdail.com"} 
+[2025-11-11 19:07:44] local.INFO: Participant registered successfully {"participant_id":14,"email":"oussema1jebal@gmail.com"} 
+[2025-11-11 19:28:07] local.ERROR: Registration failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 'company_name' in 'field list' (Connection: mysql, SQL: insert into `participants` (`first_name`, `last_name`, `company_name`, `gender`, `phone`, `email`, `access_type`, `status`, `updated_at`, `created_at`) values (oussema, jebali, we love, Homme, +21622037579, oussema1jebal@ggjhdhsdvmail.com, foire, accepted, 2025-11-11 19:28:07, 2025-11-11 19:28:07))","email":"oussema1jebal@ggjhdhsdvmail.com"} 
+[2025-11-11 20:08:15] local.INFO: Participant registered successfully {"participant_id":15,"email":"oussema1jebal@gjhghfhfhmail.com"} 
+[2025-11-11 21:05:31] local.INFO: Participant registered successfully {"participant_id":16,"email":"oussema1jebal@gmaKJDGSHDVil.com"} 

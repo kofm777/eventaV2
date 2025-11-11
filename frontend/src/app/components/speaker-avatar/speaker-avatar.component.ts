@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./speaker-avatar.component.css']
 })
 export class SpeakerAvatarComponent implements OnInit, OnDestroy {
+  @ViewChild('silentVideo', { static: false }) silentVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild('speakingVideo', { static: false }) speakingVideo!: ElementRef<HTMLVideoElement>;
   @Input() participantName: string = '';
   @Input() gender: string = 'Femme';
   @Input() autoPlay: boolean = true;
@@ -33,17 +35,13 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     this.synth = window.speechSynthesis;
   }
 
-  ngOnInit() {
+    ngOnInit() {
     this.initVoices();
-
     if (this.autoPlay && this.participantName) {
-      // Delay auto-play slightly to ensure voices are ready
       setTimeout(() => {
-        // Avoid browser auto-play block by checking if window has focus
         if (document.hasFocus()) {
           this.playWelcomeMessage();
         } else {
-          console.warn('TTS autoplay deferred until user interaction.');
           const handler = () => {
             this.playWelcomeMessage();
             document.removeEventListener('click', handler);
@@ -153,13 +151,13 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   }
 
   /** Robust speech synthesis function */
+  /** Robust speech synthesis function */
   private async speak(text: string) {
     if (!('speechSynthesis' in window)) {
-      this.error = 'La synthèse vocale n\'est pas supportée par votre navigateur.';
+      this.error = 'La synthèse vocale n\'est pas supportée.';
       return;
     }
 
-    // Prevent overlap
     if (this.synth.speaking) {
       this.synth.cancel();
       await new Promise(r => setTimeout(r, 150));
@@ -172,28 +170,25 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     this.utterance.volume = 1.0;
     if (this.selectedVoice) this.utterance.voice = this.selectedVoice;
 
-    // Event handlers
     this.utterance.onstart = () => {
-      this.isSpeaking = true;
+      this.isSpeaking = true;  // 👉 Shows speaking avatar
       this.isPlaying = true;
       this.error = null;
     };
 
     this.utterance.onend = () => {
-      this.isSpeaking = false;
+      this.isSpeaking = false; // 👉 Returns to silent avatar
       this.isPlaying = false;
     };
 
     this.utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event);
+      console.error('TTS error:', event);
       this.isSpeaking = false;
       this.isPlaying = false;
-
       if (event.error === 'interrupted') {
-        console.warn('Speech interrupted, retrying...');
         this.retryTimeout = setTimeout(() => this.speak(text), 800);
       } else {
-        this.error = 'Erreur lors de la lecture du message.';
+        this.error = 'Erreur TTS.';
       }
     };
 
@@ -231,6 +226,6 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   }
 
   onVideoError() {
-    this.error = 'Erreur lors du chargement de la vidéo.';
+    this.error = 'Erreur vidéo.';
   }
 }

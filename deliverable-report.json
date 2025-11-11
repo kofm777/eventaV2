@@ -136,7 +136,7 @@
       {
         "name": "participants",
         "columns": [
-          "id", "first_name", "last_name", "gender", "phone", "email",
+          "id", "first_name", "last_name","company_name", "gender", "phone", "email",
           "access_type", "qr_token", "qr_payload", "status",
           "created_at", "updated_at"
         ],

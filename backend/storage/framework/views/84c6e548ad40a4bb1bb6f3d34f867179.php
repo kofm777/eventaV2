@@ -117,6 +117,7 @@
             <h3>Informations de votre inscription</h3>
             <ul>
                 <li><strong>Nom :</strong> <?php echo e($participant->first_name); ?> <?php echo e($participant->last_name); ?></li>
+                <li><strong>Nom de l'entreprise :</strong> <?php echo e($participant->company_name); ?></li>
                 <li><strong>Email :</strong> <?php echo e($participant->email); ?></li>
                 <li><strong>Type d'accès :</strong> 
                     <?php if($participant->access_type === 'foire'): ?>

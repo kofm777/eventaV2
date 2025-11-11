@@ -111,6 +111,7 @@
           <h4>{{ success }}</h4>
           <div *ngIf="lastScanResult" class="participant-details">
             <p><strong>Nom:</strong> {{ lastScanResult.first_name }} {{ lastScanResult.last_name }}</p>
+            <p><strong>Nom de l'entreprise:</strong> {{ lastScanResult.company_name }}</p>
             <p><strong>Email:</strong> {{ lastScanResult.email }}</p>
             <p><strong>Genre:</strong> {{ lastScanResult.gender }}</p>
             <p><strong>Accès:</strong> {{ getAccessTypeLabel(lastScanResult.access_type) }}</p>

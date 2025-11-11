@@ -43,6 +43,22 @@
               <span *ngIf="f['last_name'].errors['serverError']">{{ f['last_name'].errors['serverError'] }}</span>
             </div>
           </div>
+          <div class="form-group">
+            <label class="form-label" for="last_name">Nom de l'entreprise*</label>
+            <input
+              type="text"
+              id="company_name"
+              class="form-control"
+              formControlName="company_name"
+              [class.error]="submitted && f['company_name'].errors"
+              placeholder="Nom de l`entrprise"
+            />
+            <div *ngIf="submitted && f['company_name'].errors" class="error-message">
+              <span *ngIf="f['company_name'].errors['required']">Le Nom de l`entrprise est obligatoire</span>
+              <span *ngIf="f['company_name'].errors['maxlength']">Le Nom de l`entrprise est trop long</span>
+              <span *ngIf="f['company_name'].errors['serverError']">{{ f['company_name'].errors['serverError'] }}</span>
+            </div>
+          </div>
         </div>
 
         <div class="form-row">

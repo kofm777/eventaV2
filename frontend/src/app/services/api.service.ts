@@ -41,9 +41,9 @@ export class ApiService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
   }
 
-  scan(data: ScanRequest): Observable<ScanResponse> {
-    return this.http.post<ScanResponse>(`${this.apiUrl}/scan`, data);
-  }
+scan(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
+  return this.http.post<ScanResponse>(`${this.apiUrl}/scan`, data);
+}
 
   // Auth endpoints
   login(credentials: LoginRequest): Observable<LoginResponse> {

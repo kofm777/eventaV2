@@ -19,6 +19,7 @@ class ParticipantFactory extends Factory
         return [
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
+            'company_name' => $this->faker->lastName(),
             'gender' => $this->faker->randomElement(['Homme', 'Femme', 'Autre']),
             'phone' => $this->faker->optional()->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),

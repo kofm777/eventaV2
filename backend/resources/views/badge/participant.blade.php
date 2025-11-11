@@ -131,6 +131,7 @@
         <div class="participant-info">
             <div class="name">{{ $participant->first_name }}</div>
             <div class="name">{{ $participant->last_name }}</div>
+            <div class="name">{{ $participant->company_name }}</div>
 
             <div class="access-type">
                 @if($participant->access_type === 'foire')

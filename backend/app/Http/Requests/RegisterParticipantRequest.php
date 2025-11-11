@@ -24,6 +24,7 @@ class RegisterParticipantRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
+            'company_name' => ['required', 'string', 'max:255'],
             'gender' => ['required', 'in:Homme,Femme,Autre'],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[\+]?[0-9\s\-\(\)]+$/'],
             'email' => ['required', 'email', 'max:255', 'unique:participants,email'],
@@ -41,6 +42,8 @@ class RegisterParticipantRequest extends FormRequest
             'first_name.max' => 'Le prénom ne peut pas dépasser 255 caractères.',
             'last_name.required' => 'Le nom est obligatoire.',
             'last_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'company_name.required' => 'Le nom est obligatoire.',
+            'company_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
             'gender.required' => 'Le genre est obligatoire.',
             'gender.in' => 'Le genre doit être Homme, Femme ou Autre.',
             'phone.max' => 'Le numéro de téléphone ne peut pas dépasser 30 caractères.',

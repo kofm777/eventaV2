@@ -35,13 +35,14 @@ class AdminController extends Controller
             $query->where('access_type', $request->access_type);
         }
 
-        // Search by name or email
+        // Search by name or email or company name
         if ($request->has('search') && $request->search !== '') {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%");
             });
         }
 

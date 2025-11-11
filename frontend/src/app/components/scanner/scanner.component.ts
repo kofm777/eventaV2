@@ -69,7 +69,7 @@ export class ScannerComponent implements OnInit, OnDestroy {
         (result, err) => {
           if (result) {
             const qrCode = result.getText();
-            this.processScan(qrCode);
+            this.processTextScan(qrCode);
           }
           if (err && !(err instanceof NotFoundException)) {
             console.error('Scan error:', err);
@@ -88,60 +88,36 @@ export class ScannerComponent implements OnInit, OnDestroy {
     this.scanning = false;
   }
 
-  processScan(qrCode: string) {
-    // Temporarily stop scanning to prevent multiple scans
-    this.stopScanning();
+ /** Handle QR code as TEXT (from camera or manual input) */
+private processTextScan(qrCode: string) {
+  this.stopScanning();
 
-    const scanData = {
-      payload: qrCode,
-      scanner_user: this.scannerUser || undefined
-    };
+  const scanData = {
+    payload: qrCode, // ← text token
+    scanner_user: this.scannerUser || undefined
+  };
 
-    this.apiService.scan(scanData).subscribe({
-      next: (response) => {
-        if (response.ok) {
-          this.success = response.message;
-          this.lastScanResult = response.participant;
-
-          // Play success sound (optional)
-          this.playSuccessSound();
-
-          // Keep the result displayed - don't auto-clear
-          // Auto-restart scanning after 3 seconds but keep result
-          setTimeout(() => {
-            if (this.selectedCamera) {
-              this.startScanning();
-            }
-          }, 100000);
-        } else {
-          this.error = response.message;
-          this.lastScanResult = null;
-          this.playErrorSound();
-
-          // Auto-restart scanning after 2 seconds
-          setTimeout(() => {
-            this.error = null;
-            if (this.selectedCamera) {
-              this.startScanning();
-            }
-          }, 2000);
-        }
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Erreur lors de la vérification du QR code.';
+  this.apiService.scan(scanData).subscribe({
+    next: (response) => {
+      if (response.ok) {
+        this.success = response.message;
+        this.lastScanResult = response.participant;
+        this.playSuccessSound();
+      } else {
+        this.error = response.message;
         this.lastScanResult = null;
         this.playErrorSound();
-
-        // Auto-restart scanning after 2 seconds
-        setTimeout(() => {
-          this.error = null;
-          if (this.selectedCamera) {
-            this.startScanning();
-          }
-        }, 2000);
+        setTimeout(() => this.error = null, 3000);
       }
-    });
-  }
+    },
+    error: (err) => {
+      this.error = err.error?.message || 'Erreur lors de la vérification du QR code.';
+      this.lastScanResult = null;
+      this.playErrorSound();
+      setTimeout(() => this.error = null, 3000);
+    }
+  });
+}
 
   scanManualCode() {
     if (!this.manualQrCode.trim()) {
@@ -149,31 +125,55 @@ export class ScannerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.processScan(this.manualQrCode);
+    this.processTextScan(this.manualQrCode);
     this.manualQrCode = '';
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
+ onFileSelected(event: any) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        // Use ZXing to decode the QR code from the image
-        this.codeReader.decodeFromImage(img).then(result => {
-          const qrCode = result.getText();
-          this.processScan(qrCode);
-        }).catch(err => {
-          this.error = 'Impossible de lire le QR code dans l\'image.';
-          setTimeout(() => this.error = null, 1000000);
-        });
-      };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64String = (e.target?.result as string).split(',')[1]; // Extract base64 part
+    this.processImageScan(base64String);
+  };
+  reader.readAsDataURL(file);
+
+  // Reset input
+  event.target.value = '';
+}
+
+/** Send base64 image directly to backend (do NOT decode with ZXing) */
+private processImageScan(base64Image: string) {
+  const scanData = {
+    qr_image: base64Image, // ← Send as qr_image, not payload
+    scanner_user: this.scannerUser || undefined
+  };
+
+  this.apiService.scan(scanData).subscribe({
+    next: (response) => {
+      if (response.ok) {
+        this.success = response.message;
+        this.lastScanResult = response.participant;
+        this.playSuccessSound();
+
+        // Keep result displayed (no auto-clear)
+      } else {
+        this.error = response.message;
+        this.lastScanResult = null;
+        this.playErrorSound();
+        setTimeout(() => this.error = null, 3000);
+      }
+    },
+    error: (err) => {
+      this.error = err.error?.message || 'Erreur lors de la vérification du QR code.';
+      this.lastScanResult = null;
+      this.playErrorSound();
+      setTimeout(() => this.error = null, 3000);
+    }
+  });
+}
 
   playSuccessSound() {
     // Create a simple beep sound for success

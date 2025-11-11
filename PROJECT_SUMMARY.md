@@ -233,7 +233,7 @@ make seed
 ### Tables
 
 **participants**
-- id, first_name, last_name, gender, phone, email (unique)
+- id, first_name, last_name,company_name, gender, phone, email (unique)
 - access_type (foire, conference, both)
 - status (pending, accepted, rejected)
 - qr_token (unique), qr_payload (JSON)

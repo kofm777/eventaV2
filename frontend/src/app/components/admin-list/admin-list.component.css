@@ -91,7 +91,33 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.fullscreen-container {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  background-color: #f9fafb; /* optional: match your theme */
+}
 
+/* Optional: Make cards stretch to full width */
+.fullscreen-container .card {
+  width: 100%;
+  max-width: none; /* override any max-width */
+  margin-bottom: 1.5rem;
+}
+
+/* Ensure table and filters also expand */
+.fullscreen-container .filters-grid,
+.fullscreen-container .table-responsive {
+  width: 100%;
+}
+
+/* Adjust responsive padding on small screens */
+@media (max-width: 768px) {
+  .fullscreen-container {
+    padding: 1rem;
+  }
+}
 .qr-image-container {
   position: relative;
   display: inline-block;

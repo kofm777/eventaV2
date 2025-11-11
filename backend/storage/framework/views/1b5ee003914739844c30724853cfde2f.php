@@ -131,6 +131,7 @@
         <div class="participant-info">
             <div class="name"><?php echo e($participant->first_name); ?></div>
             <div class="name"><?php echo e($participant->last_name); ?></div>
+            <div class="name"><?php echo e($participant->company_name); ?></div>
 
             <div class="access-type">
                 <?php if($participant->access_type === 'foire'): ?>

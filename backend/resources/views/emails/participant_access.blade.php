@@ -117,6 +117,7 @@
             <h3>Informations de votre inscription</h3>
             <ul>
                 <li><strong>Nom :</strong> {{ $participant->first_name }} {{ $participant->last_name }}</li>
+                <li><strong>Nom de l'entreprise :</strong> {{ $participant->company_name }}</li>
                 <li><strong>Email :</strong> {{ $participant->email }}</li>
                 <li><strong>Type d'accès :</strong> 
                     @if($participant->access_type === 'foire')

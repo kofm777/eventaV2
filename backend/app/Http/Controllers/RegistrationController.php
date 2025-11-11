@@ -27,6 +27,7 @@ class RegistrationController extends Controller
             $participant = Participant::create([
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
+                'company_name' => $request->company_name,
                 'gender' => $request->gender,
                 'phone' => $request->phone,
                 'email' => $request->email,
@@ -75,7 +76,7 @@ class RegistrationController extends Controller
             return response()->json([
                 'ok' => true,
                 'participant' => $participant->only([
-                    'id', 'first_name', 'last_name', 'email', 'access_type', 'status'
+                    'id', 'first_name', 'last_name','company_name', 'email', 'access_type', 'status'
                 ]),
                 'qr' => $qrData['qr_image'],
                 'email_sent' => $emailSent,

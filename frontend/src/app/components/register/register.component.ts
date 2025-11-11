@@ -35,6 +35,7 @@ export class RegisterComponent {
     this.registerForm = this.fb.group({
       first_name: ['', [Validators.required, Validators.maxLength(255)]],
       last_name: ['', [Validators.required, Validators.maxLength(255)]],
+      company_name: ['', [Validators.required, Validators.maxLength(255)]],
       gender: ['', Validators.required],
       phone: [
         '',
