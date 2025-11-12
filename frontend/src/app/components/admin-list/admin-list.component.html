@@ -1,7 +1,7 @@
 <div class="fullscreen-container">
   <div class="admin-header">
-    <h2>Gestion des Participants</h2>
-    <p class="subtitle">Accepter ou rejeter les inscriptions</p>
+    <!-- Changed heading to English -->
+    <p class="subtitle">Accept or reject registrations</p>
   </div>
 
   <div *ngIf="error" class="alert alert-error">
@@ -14,41 +14,41 @@
 
   <div class="card">
     <div class="filters-section">
-      <h3>Filtres</h3>
+      <h3>Filters</h3>
       <div class="filters-grid">
         <div class="form-group">
-          <label class="form-label">Statut</label>
+          <label class="form-label">Status</label>
           <select class="form-control" [(ngModel)]="statusFilter" (change)="applyFilters()">
-            <option value="">Tous</option>
-            <option value="pending">En attente</option>
-            <option value="accepted">Accepté</option>
-            <option value="rejected">Rejeté</option>
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Type d'accès</label>
+          <label class="form-label">Access Type</label>
           <select class="form-control" [(ngModel)]="accessTypeFilter" (change)="applyFilters()">
-            <option value="">Tous</option>
-            <option value="foire">Foire</option>
-            <option value="both">Foire + Conférence</option>
+            <option value="">All</option>
+            <option value="foire">Fair</option>
+            <option value="both">Fair + Conference</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Recherche</label>
+          <label class="form-label">Search</label>
           <input
             type="text"
             class="form-control"
             [(ngModel)]="searchQuery"
             (keyup.enter)="applyFilters()"
-            placeholder="Nom, email..."
+            placeholder="Name, email..."
           />
         </div>
 
         <div class="form-group filter-actions">
-          <button class="btn btn-primary" (click)="applyFilters()">Appliquer</button>
-          <button class="btn btn-secondary" (click)="clearFilters()">Réinitialiser</button>
+          <button class="btn btn-primary" (click)="applyFilters()">Apply</button>
+          <button class="btn btn-secondary" (click)="clearFilters()">Reset</button>
         </div>
       </div>
     </div>
@@ -58,30 +58,30 @@
     <div class="table-header">
       <h3>Participants ({{ total }})</h3>
       <button class="btn btn-secondary" (click)="loadParticipants()">
-        Actualiser
+        Refresh
       </button>
     </div>
 
     <div *ngIf="loading" class="loading">
       <div class="spinner"></div>
-      <p>Chargement...</p>
+      <p>Loading...</p>
     </div>
 
     <div *ngIf="!loading && participants.length === 0" class="empty-state">
-      <p>Aucun participant trouvé.</p>
+      <p>No participants found.</p>
     </div>
 
     <div *ngIf="!loading && participants.length > 0" class="table-responsive">
       <table class="table">
         <thead>
           <tr>
-            <th>Nom</th>
+            <th>Name</th>
             <th>Email</th>
-            <th>Nom de l'entreprise</th>
-            <th>Genre</th>
-            <th>Téléphone</th>
-            <th>Type d'accès</th>
-            <th>Statut</th>
+            <th>Company Name</th>
+            <th>Gender</th>
+            <th>Phone</th>
+            <th>Access Type</th>
+            <th>Status</th>
             <th>QR Token</th>
             <th>QR Image</th>
             <th>Date</th>
@@ -116,7 +116,7 @@
               <div class="qr-image-container" *ngIf="participant.qr_image; else noQrImage">
                 <img [src]="'data:image/png;base64,' + participant.qr_image" alt="QR Code" class="qr-image-preview" />
                 <div class="qr-overlay">
-                  <button class="btn btn-secondary btn-sm" (click)="downloadQrImage(participant)">Télécharger</button>
+                  <button class="btn btn-secondary btn-sm" (click)="downloadQrImage(participant)">Download</button>
                 </div>
               </div>
               <ng-template #noQrImage>
@@ -130,7 +130,7 @@
                   *ngIf="participant.status === 'pending'"
                   class="btn btn-success btn-sm"
                   (click)="acceptParticipant(participant)"
-                  title="Accepter"
+                  title="Accept"
                 >
                   ✓
                 </button>
@@ -138,21 +138,21 @@
                   *ngIf="participant.status === 'pending'"
                   class="btn btn-danger btn-sm"
                   (click)="rejectParticipant(participant)"
-                  title="Rejeter"
+                  title="Reject"
                 >
                   ✗
                 </button>
                 <button
                   class="btn btn-primary btn-sm"
                   (click)="downloadBadge(participant)"
-                  title="Télécharger le badge PDF"
+                  title="Download badge PDF"
                 >
                   📄
                 </button>
                 <button
                   class="btn btn-outline-danger btn-sm"
                   (click)="deleteParticipant(participant)"
-                  title="Supprimer"
+                  title="Delete"
                 >
                   🗑️
                 </button>
@@ -169,17 +169,17 @@
         (click)="previousPage()"
         [disabled]="currentPage === 1"
       >
-        Précédent
+        Previous
       </button>
       <span class="pagination-info">
-        Page {{ currentPage }} sur {{ lastPage }}
+        Page {{ currentPage }} of {{ lastPage }}
       </span>
       <button
         class="btn btn-secondary"
         (click)="nextPage()"
         [disabled]="currentPage === lastPage"
       >
-        Suivant
+        Next
       </button>
     </div>
   </div>

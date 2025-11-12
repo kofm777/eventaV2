@@ -101,7 +101,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Erreur lors de l\'acceptation du participant.',
+                'message' => 'Error while accepting participant.',
             ], 500);
         }
     }
@@ -147,7 +147,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Erreur lors du rejet du participant.',
+                'message' => 'Error while rejecting participant.',
             ], 500);
         }
     }
@@ -193,7 +193,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Erreur lors de la suppression du participant.',
+                'message' => 'Error while deleting participant.',
             ], 500);
         }
     }
@@ -216,7 +216,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Erreur lors de la génération du badge.',
+                'message' => 'Error while generating badge.',
             ], 500);
         }
     }

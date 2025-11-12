@@ -33,8 +33,8 @@ public function scan(Request $request): JsonResponse
     if (!$request->payload && !$request->qr_image) {
         return response()->json([
             'ok' => false,
-            'message' => 'QR token ou image manquant.',
-        ], 400);
+            'message' => 'Error during scan processing.',
+        ], 500);
     }
 
     try {
@@ -56,7 +56,7 @@ public function scan(Request $request): JsonResponse
                 Log::warning('No participant found for uploaded QR image');
                 return response()->json([
                     'ok' => false,
-                    'message' => 'QR image non reconnu.',
+                    'message' => 'QR image not recognized.',
                 ], 404);
             }
 
@@ -67,7 +67,7 @@ public function scan(Request $request): JsonResponse
                 Log::error('Participant has no qr_token', ['participant_id' => $participant->id]);
                 return response()->json([
                     'ok' => false,
-                    'message' => 'Données QR corrompues.',
+                    'message' => 'Corrupted QR data.',
                 ], 500);
             }
         }
@@ -84,7 +84,7 @@ public function scan(Request $request): JsonResponse
 
             return response()->json([
                 'ok' => false,
-                'message' => 'QR code invalide ou corrompu.',
+                'message' => 'Invalid or corrupted QR code.',
             ], 403);
         }
 
@@ -103,7 +103,7 @@ public function scan(Request $request): JsonResponse
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Participant non trouvé.',
+                'message' => 'Participant not found.',
             ], 404);
         }
 
@@ -115,7 +115,7 @@ public function scan(Request $request): JsonResponse
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Accès refusé. Votre inscription n\'est pas encore validée.',
+                'message' => 'Access denied. Your registration is not yet validated.',
                 'participant' => $participant->only(['id', 'first_name', 'last_name', 'status']),
             ], 403);
         }
@@ -142,7 +142,7 @@ public function scan(Request $request): JsonResponse
                 'id', 'first_name', 'last_name', 'company_name', 'gender', 'email', 'access_type', 'status'
             ]),
             'scan_id' => $scan->id,
-            'message' => "Bienvenue {$participant->full_name}!",
+            'message' => "Welcome {$participant->full_name}!",
         ]);
 
     } catch (\Exception $e) {
@@ -153,7 +153,7 @@ public function scan(Request $request): JsonResponse
 
         return response()->json([
             'ok' => false,
-            'message' => 'Erreur lors du traitement du scan.',
+            'message' => 'Error during scan processing.',
         ], 500);
     }
 }

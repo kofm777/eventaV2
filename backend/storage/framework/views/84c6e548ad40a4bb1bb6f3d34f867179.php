@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,86 +74,86 @@
 <body>
     <div class="header">
         <h1>Event Access</h1>
-        <p>Système de gestion d'accès aux événements</p>
+        <p>Event access management system</p>
     </div>
 
     <div class="content">
-        <h2>Bonjour <?php echo e($participant->first_name); ?> <?php echo e($participant->last_name); ?>,</h2>
+        <h2>Hello <?php echo e($participant->first_name); ?> <?php echo e($participant->last_name); ?>,</h2>
 
         <?php if($emailType === 'deleted'): ?>
             <div class="status-rejected">
-                <strong>Inscription annulée</strong>
+                <strong>Registration cancelled</strong>
             </div>
-            <p>Nous vous informons que votre inscription à l'événement a été annulée par l'administrateur.</p>
-            <p>Si vous pensez qu'il s'agit d'une erreur, n'hésitez pas à nous contacter.</p>
+            <p>We inform you that your registration for the event has been cancelled by the administrator.</p>
+            <p>If you believe this is a mistake, feel free to contact us.</p>
         <?php elseif($participant->status === 'pending'): ?>
             <div class="status-pending">
-                <strong>Votre demande d'accès est en attente de validation</strong>
+                <strong>Your access request is pending validation</strong>
             </div>
-            <p>Nous avons bien reçu votre inscription pour l'événement. Votre demande est actuellement en cours d'examen par notre équipe.</p>
-            <p>Vous recevrez un nouvel email dès que votre inscription sera validée.</p>
+            <p>We have received your registration for the event. Your request is currently being reviewed by our team.</p>
+            <p>You will receive a new email once your registration is validated.</p>
         <?php elseif($participant->status === 'accepted'): ?>
             <div class="status-accepted">
-                <strong>Accès confirmé — Bienvenue !</strong>
+                <strong>Access confirmed — Welcome!</strong>
             </div>
-            <p>Félicitations ! Votre inscription a été acceptée. Vous pouvez maintenant accéder à l'événement.</p>
+            <p>Congratulations! Your registration has been accepted. You can now access the event.</p>
 
             <?php if($qrImage): ?>
                 <div class="qr-container">
-                    <h3>Votre QR Code d'accès</h3>
-                    <img src="data:image/png;base64,<?php echo e($qrImage); ?>" alt="QR Code d'accès" style="max-width: 300px;">
-                    <p><small>Présentez ce QR code à l'entrée de l'événement</small></p>
+                    <h3>Your access QR Code</h3>
+                    <img src="data:image/png;base64,<?php echo e($qrImage); ?>" alt="Access QR Code" style="max-width: 300px;">
+                    <p><small>Show this QR code at the event entrance</small></p>
                 </div>
             <?php endif; ?>
         <?php elseif($participant->status === 'rejected'): ?>
             <div class="status-rejected">
-                <strong>Accès refusé</strong>
+                <strong>Access denied</strong>
             </div>
-            <p>Nous regrettons de vous informer que votre demande d'accès n'a pas pu être acceptée.</p>
-            <p>Si vous pensez qu'il s'agit d'une erreur, n'hésitez pas à nous contacter.</p>
+            <p>We regret to inform you that your access request could not be accepted.</p>
+            <p>If you believe this is a mistake, feel free to contact us.</p>
         <?php endif; ?>
 
         <div class="participant-info">
-            <h3>Informations de votre inscription</h3>
+            <h3>Your registration information</h3>
             <ul>
-                <li><strong>Nom :</strong> <?php echo e($participant->first_name); ?> <?php echo e($participant->last_name); ?></li>
-                <li><strong>Nom de l'entreprise :</strong> <?php echo e($participant->company_name); ?></li>
-                <li><strong>Email :</strong> <?php echo e($participant->email); ?></li>
-                <li><strong>Type d'accès :</strong> 
+                <li><strong>Name:</strong> <?php echo e($participant->first_name); ?> <?php echo e($participant->last_name); ?></li>
+                <li><strong>Company Name:</strong> <?php echo e($participant->company_name); ?></li>
+                <li><strong>Email:</strong> <?php echo e($participant->email); ?></li>
+                <li><strong>Access Type:</strong>
                     <?php if($participant->access_type === 'foire'): ?>
-                        Foire uniquement
+                        Fair only
                     <?php elseif($participant->access_type === 'conference'): ?>
-                        Conférence uniquement
+                        Conference only
                     <?php else: ?>
-                        Foire et Conférence
+                        Fair and Conference
                     <?php endif; ?>
                 </li>
-                <li><strong>Statut :</strong> 
+                <li><strong>Status:</strong>
                     <?php if($participant->status === 'pending'): ?>
-                        En attente
+                        Pending
                     <?php elseif($participant->status === 'accepted'): ?>
-                        Accepté
+                        Accepted
                     <?php else: ?>
-                        Refusé
+                        Denied
                     <?php endif; ?>
                 </li>
             </ul>
         </div>
 
         <?php if($participant->status === 'accepted'): ?>
-            <p><strong>Instructions importantes :</strong></p>
+            <p><strong>Important instructions:</strong></p>
             <ul>
-                <li>Conservez ce QR code précieusement</li>
-                <li>Présentez-le à l'entrée de l'événement</li>
-                <li>Assurez-vous que votre téléphone est chargé</li>
-                <li>Vous pouvez également imprimer ce QR code</li>
+                <li>Keep this QR code safe</li>
+                <li>Show it at the event entrance</li>
+                <li>Make sure your phone is charged</li>
+                <li>You can also print this QR code</li>
             </ul>
         <?php endif; ?>
     </div>
 
     <div class="footer">
-        <p>Event Access - Système de gestion d'événements</p>
-        <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        <p>Event Access - Event management system</p>
+        <p>This email was sent automatically, please do not reply.</p>
     </div>
 </body>
 </html>

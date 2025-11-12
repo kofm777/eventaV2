@@ -38,21 +38,21 @@ class RegisterParticipantRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'first_name.required' => 'Le prénom est obligatoire.',
-            'first_name.max' => 'Le prénom ne peut pas dépasser 255 caractères.',
-            'last_name.required' => 'Le nom est obligatoire.',
-            'last_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
-            'company_name.required' => 'Le nom est obligatoire.',
-            'company_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
-            'gender.required' => 'Le genre est obligatoire.',
-            'gender.in' => 'Le genre doit être Homme, Femme ou Autre.',
-            'phone.max' => 'Le numéro de téléphone ne peut pas dépasser 30 caractères.',
-            'phone.regex' => 'Le format du numéro de téléphone n\'est pas valide.',
-            'email.required' => 'L\'adresse email est obligatoire.',
-            'email.email' => 'L\'adresse email n\'est pas valide.',
-            'email.unique' => 'Cette adresse email est déjà utilisée.',
-            'access_type.required' => 'Le type d\'accès est obligatoire.',
-            'access_type.in' => 'Le type d\'accès doit être foire, conference ou both.',
+            'first_name.required' => 'First name is required.',
+            'first_name.max' => 'First name cannot exceed 255 characters.',
+            'last_name.required' => 'Last name is required.',
+            'last_name.max' => 'Last name cannot exceed 255 characters.',
+            'company_name.required' => 'Company name is required.',
+            'company_name.max' => 'Company name cannot exceed 255 characters.',
+            'gender.required' => 'Gender is required.',
+            'gender.in' => 'Gender must be Homme, Femme, or Autre.',
+            'phone.max' => 'Phone number cannot exceed 30 characters.',
+            'phone.regex' => 'Phone number format is invalid.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Email address is invalid.',
+            'email.unique' => 'This email address is already in use.',
+            'access_type.required' => 'Access type is required.',
+            'access_type.in' => 'Access type must be foire, conference, or both.',
         ];
     }
 }

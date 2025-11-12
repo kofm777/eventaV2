@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="fr">
+g<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -135,21 +135,21 @@
 
             <div class="access-type">
                 @if($participant->access_type === 'foire')
-                    Foire
+                    Fair
                 @elseif($participant->access_type === 'conference')
-                    Conférence
+                    Conference
                 @else
-                    Foire + Conférence
+                    Fair + Conference
                 @endif
             </div>
 
             <div class="details">
-                <strong>Genre:</strong> {{ $participant->gender === 'Homme' ? 'M.' : ($participant->gender === 'Femme' ? 'Mme' : 'Autre') }}
+                <strong>Gender:</strong> {{ $participant->gender === 'Homme' ? 'Mr.' : ($participant->gender === 'Femme' ? 'Ms.' : 'Other') }}
             </div>
 
             @if($participant->phone)
                 <div class="details">
-                    <strong>Tél:</strong> {{ $participant->phone }}
+                    <strong>Phone:</strong> {{ $participant->phone }}
                 </div>
             @endif
         </div>
@@ -157,14 +157,14 @@
         <div class="qr-section">
             @if($qr_image)
                 <img src="data:image/png;base64,{{ $qr_image }}" alt="QR Code" class="qr-code" />
-                <div class="qr-label">Code d'accès</div>
+                <div class="qr-label">Access Code</div>
             @else
-                <div class="qr-label">QR non disponible</div>
+                <div class="qr-label">QR not available</div>
             @endif
         </div>
 
         <div class="footer">
-            Généré le {{ $generated_at }}
+            Generated on {{ $generated_at }}
         </div>
     </div>
 </body>

@@ -80,7 +80,7 @@ class RegistrationController extends Controller
                 ]),
                 'qr' => $qrData['qr_image'],
                 'email_sent' => $emailSent,
-                'message' => 'Inscription réussie. ' . ($emailSent ? 'Un email avec votre QR code vous a été envoyé.' : 'Votre QR code est prêt à être téléchargé.'),
+                'message' => 'Registration successful. ' . ($emailSent ? 'An email with your QR code has been sent to you.' : 'Your QR code is ready to be downloaded.'),
             ]);
 
         } catch (\Exception $e) {
@@ -91,7 +91,7 @@ class RegistrationController extends Controller
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Une erreur est survenue lors de l\'inscription.',
+                'message' => 'An error occurred during registration.',
             ], 500);
         }
     }

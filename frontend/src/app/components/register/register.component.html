@@ -1,149 +1,154 @@
-<div class="container">
-  <div class="register-container">
-    <div class="card">
-      <h2>Inscription à l'événement</h2>
-      <p class="subtitle">Remplissez le formulaire ci-dessous pour vous inscrire</p>
-
-      <div *ngIf="error" class="alert alert-error">
-        {{ error }}
-      </div>
-
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="first_name">Prénom *</label>
-            <input
-              type="text"
-              id="first_name"
-              class="form-control"
-              formControlName="first_name"
-              [class.error]="submitted && f['first_name'].errors"
-              placeholder="Votre prénom"
-            />
-            <div *ngIf="submitted && f['first_name'].errors" class="error-message">
-              <span *ngIf="f['first_name'].errors['required']">Le prénom est obligatoire</span>
-              <span *ngIf="f['first_name'].errors['maxlength']">Le prénom est trop long</span>
-              <span *ngIf="f['first_name'].errors['serverError']">{{ f['first_name'].errors['serverError'] }}</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="last_name">Nom *</label>
-            <input
-              type="text"
-              id="last_name"
-              class="form-control"
-              formControlName="last_name"
-              [class.error]="submitted && f['last_name'].errors"
-              placeholder="Votre nom"
-            />
-            <div *ngIf="submitted && f['last_name'].errors" class="error-message">
-              <span *ngIf="f['last_name'].errors['required']">Le nom est obligatoire</span>
-              <span *ngIf="f['last_name'].errors['maxlength']">Le nom est trop long</span>
-              <span *ngIf="f['last_name'].errors['serverError']">{{ f['last_name'].errors['serverError'] }}</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="last_name">Nom de l'entreprise*</label>
-            <input
-              type="text"
-              id="company_name"
-              class="form-control"
-              formControlName="company_name"
-              [class.error]="submitted && f['company_name'].errors"
-              placeholder="Nom de l`entrprise"
-            />
-            <div *ngIf="submitted && f['company_name'].errors" class="error-message">
-              <span *ngIf="f['company_name'].errors['required']">Le Nom de l`entrprise est obligatoire</span>
-              <span *ngIf="f['company_name'].errors['maxlength']">Le Nom de l`entrprise est trop long</span>
-              <span *ngIf="f['company_name'].errors['serverError']">{{ f['company_name'].errors['serverError'] }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="gender">Genre *</label>
-            <select
-              id="gender"
-              class="form-control"
-              formControlName="gender"
-              [class.error]="submitted && f['gender'].errors"
-            >
-              <option value="">Sélectionnez...</option>
-              <option value="Homme">Homme</option>
-              <option value="Femme">Femme</option>
-              <option value="Autre">Autre</option>
-            </select>
-            <div *ngIf="submitted && f['gender'].errors" class="error-message">
-              <span *ngIf="f['gender'].errors['required']">Le genre est obligatoire</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="phone">Téléphone</label>
-            <input
-              type="tel"
-              id="phone"
-              class="form-control"
-              formControlName="phone"
-              [class.error]="submitted && f['phone'].errors"
-              placeholder="+33 6 12 34 56 78"
-            />
-            <div *ngIf="submitted && f['phone'].errors" class="error-message">
-              <span *ngIf="f['phone'].errors['pattern']">Format de téléphone invalide</span>
-              <span *ngIf="f['phone'].errors['serverError']">{{ f['phone'].errors['serverError'] }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="email">Email *</label>
-          <input
-            type="email"
-            id="email"
-            class="form-control"
-            formControlName="email"
-            [class.error]="submitted && f['email'].errors"
-            placeholder="votre.email@example.com"
-          />
-          <div *ngIf="submitted && f['email'].errors" class="error-message">
-            <span *ngIf="f['email'].errors['required']">L'email est obligatoire</span>
-            <span *ngIf="f['email'].errors['email']">Format d'email invalide</span>
-            <span *ngIf="f['email'].errors['serverError']">{{ f['email'].errors['serverError'] }}</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Type d'accès *</label>
-          <div class="access-type-selection">
-            <div class="access-option">
-              <span class="access-label">Foire</span>
-              <span class="access-description">(accès par défaut)</span>
-            </div>
-            <div class="access-option">
-              <input
-                type="checkbox"
-                id="conference_access"
-                [formControl]="conferenceAccess"
-              />
-              <label for="conference_access" class="checkbox-label">
-                Ajouter l'accès à la Conférence
-              </label>
-            </div>
-          </div>
-          <div class="access-summary">
-            <strong>Accès sélectionné:</strong> {{ getSelectedAccessType() }}
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-large" [disabled]="loading">
-            <span *ngIf="!loading">S'inscrire</span>
-            <span *ngIf="loading">Inscription en cours...</span>
-          </button>
-        </div>
-      </form>
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div
+            *ngIf="error"
+            class="toast toast-error animate-toast"
+            (click)="error=null"
+    >
+        <strong>Error:</strong> {{ error }}
+        <span class="close">&times;</span>
     </div>
-  </div>
+
+    <div
+            *ngIf="success"
+            class="toast toast-success animate-toast"
+            (click)="success=null"
+    >
+        <strong>Success:</strong> {{ success }}
+        <span class="close">&times;</span>
+    </div>
+</div>
+<div class="register-page">
+    <div class="particles-bg">
+        <div class="particle" *ngFor="let p of [1,2,3,4,5,6,7,8,9,10]"></div>
+    </div>
+
+    <div class="register-glass-card">
+        <h2 class="register-title animate-fade-in">Register for Event Access</h2>
+        <p class="register-subtitle animate-fade-in-delay">
+            Step into the future of smart event management — complete the form to secure your digital access.
+        </p>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+            <div class="form-row">
+                <div class="form-group floating-label">
+                    <input
+                            type="text"
+                            id="first_name"
+                            formControlName="first_name"
+                            placeholder=" "
+                            class="form-control"
+                            [class.error]="submitted && f['first_name'].errors"
+                    />
+                    <label for="first_name">First Name *</label>
+                    <div *ngIf="submitted && f['first_name'].errors" class="error-message">
+                        <span *ngIf="f['first_name'].errors['required']">First name is required</span>
+                    </div>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input
+                            type="text"
+                            id="last_name"
+                            formControlName="last_name"
+                            placeholder=" "
+                            class="form-control"
+                            [class.error]="submitted && f['last_name'].errors"
+                    />
+                    <label for="last_name">Last Name *</label>
+                    <div *ngIf="submitted && f['last_name'].errors" class="error-message">
+                        <span *ngIf="f['last_name'].errors['required']">Last name is required</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group floating-label">
+                    <input
+                            type="text"
+                            id="company_name"
+                            formControlName="company_name"
+                            placeholder=" "
+                            class="form-control"
+                            [class.error]="submitted && f['company_name'].errors"
+                    />
+                    <label for="company_name">Company Name *</label>
+                </div>
+
+                <div class="form-group floating-label">
+                    <input
+                            type="tel"
+                            id="phone"
+                            formControlName="phone"
+                            placeholder=" "
+                            class="form-control"
+                            [class.error]="submitted && f['phone'].errors"
+                    />
+                    <label for="phone">Phone</label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group floating-label">
+                    <input
+                            type="email"
+                            id="email"
+                            formControlName="email"
+                            placeholder=" "
+                            class="form-control"
+                            [class.error]="submitted && f['email'].errors"
+                    />
+                    <label for="email">Email *</label>
+                </div>
+
+                <div class="form-group floating-label">
+                    <select
+                            id="gender"
+                            formControlName="gender"
+                            class="form-control"
+                            [class.error]="submitted && f['gender'].errors"
+                    >
+                        <option value="">Select...</option>
+                        <option value="Homme" style="color: black;">Male</option>
+                        <option value="Femme" style="color: black;">Female</option>
+                        <option value="Autre" style="color: black;">Other</option>
+                    </select>
+                    <label for="gender">Gender *</label>
+                </div>
+            </div>
+
+            <div class="form-group access-type-group">
+                <label class="form-label">Access Type *</label>
+                <div class="access-type-selection">
+                    <div class="access-option">
+                        <span class="access-label">Fair</span>
+                        <span class="access-description">(Default Access)</span>
+                    </div>
+                    <div class="access-option checkbox">
+                        <input type="checkbox" id="conference_access" [formControl]="conferenceAccess" />
+                        <label for="conference_access" class="checkbox-label">Add Conference Access</label>
+                    </div>
+                </div>
+                <div class="access-summary">
+                    <strong>Selected Access:</strong> {{ getSelectedAccessType() }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit" [disabled]="loading">
+                    <span *ngIf="!loading">Register</span>
+                    <span *ngIf="loading" class="progress-indicator">
+            <span class="loader"></span> Registration in Progress...
+          </span>
+                </button>
+            </div>
+
+            <div *ngIf="success" class="success-checkmark">
+                <div class="check-icon">
+                    <span class="checkmark">&#10003;</span>
+                </div>
+                <span class="success-message">Registration Successful!</span>
+            </div>
+        </form>
+    </div>
 </div>

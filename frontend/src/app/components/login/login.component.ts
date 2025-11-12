@@ -1,41 +1,44 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   loading = false;
   submitted = false;
   error: string | null = null;
-  returnUrl: string = '/admin';
+  returnUrl: string = '/admin/participants';
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
+      private fb: FormBuilder,
+      private authService: AuthService,
+      private router: Router,
+      private route: ActivatedRoute,
+      private ngZone: NgZone
   ) {
-    // Redirect if already logged in
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/admin']);
-    }
-
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+  }
 
-    // Get return url from route parameters or default to '/admin'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin';
+  ngOnInit(): void {
+    // Get return URL from query params or default
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/participants';
+
+    // Redirect **only if authenticated and not already on /admin/login**
+    if (this.authService.isAuthenticated() && this.router.url !== '/admin/login') {
+      this.ngZone.run(() => this.router.navigate([this.returnUrl]));
+    }
   }
 
   get f() {
@@ -56,12 +59,12 @@ export class LoginComponent {
       next: (response) => {
         this.loading = false;
         if (response.ok) {
-          this.router.navigate([this.returnUrl]);
+          this.ngZone.run(() => this.router.navigate([this.returnUrl]));
         }
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Identifiants incorrects. Veuillez réessayer.';
+        this.error = err.error?.message || 'Incorrect credentials. Please try again.';
       }
     });
   }

@@ -1,0 +1,4 @@
+[2025-11-12 10:11:27] local.INFO: Successful scan {"scan_id":1,"participant_id":1,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-12 10:12:16] local.INFO: Successful scan {"scan_id":2,"participant_id":1,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-12 16:00:31] local.INFO: Successful scan {"scan_id":3,"participant_id":2,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 
+[2025-11-12 20:52:40] local.INFO: Successful scan {"scan_id":4,"participant_id":2,"participant_name":"oussema jebali","access_type":"both","scanner_user":null} 

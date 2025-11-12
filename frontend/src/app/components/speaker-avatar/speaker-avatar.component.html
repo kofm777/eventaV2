@@ -1,7 +1,7 @@
 <div class="avatar-container">
   <div class="avatar-card">
     <div class="avatar-header">
-      <h3>Avatar de Bienvenue</h3>
+      <h3>Welcome Avatar</h3>
     </div>
 
     <div *ngIf="error" class="alert alert-error">
@@ -41,13 +41,13 @@
         <strong>{{ participantName }}</strong>
       </p>
       <p *ngIf="participantName" class="access-status" [class.accepted]="accessStatus === 'Accepted'" [class.denied]="accessStatus === 'Denied'">
-        {{ accessStatus === 'Accepted' ? '✓ Accès autorisé' : '✗ Accès refusé' }}
+        {{ accessStatus === 'Accepted' ? '✓ Access granted' : '✗ Access denied' }}
       </p>
       <p *ngIf="participantName" class="access-type">
         {{ getAccessTypeDisplay() }}
       </p>
       <p *ngIf="!participantName" class="no-participant">
-        En attente d'un participant...
+        Waiting for a participant...
       </p>
     </div>
 
@@ -57,8 +57,8 @@
         (click)="playWelcomeMessage()"
         [disabled]="!participantName || isSpeaking"
       >
-        <span *ngIf="!isSpeaking">▶ Lire le message</span>
-        <span *ngIf="isSpeaking">🔊 En cours...</span>
+        <span *ngIf="!isSpeaking">▶ Read message</span>
+        <span *ngIf="isSpeaking">🔊 In progress...</span>
       </button>
 
       <button
@@ -66,14 +66,14 @@
         (click)="stopSpeaking()"
         [disabled]="!isSpeaking"
       >
-        ⏹ Arrêter
+        ⏹ Stop
       </button>
     </div>
 
     <div class="avatar-footer">
       <p class="info-text">
-        <strong>Note:</strong> Ce composant utilise la synthèse vocale du navigateur (Web Speech API).
-        Pour une meilleure expérience, utilisez Chrome ou Edge avec une connexion internet.
+        <strong>Note:</strong> This component uses the browser's speech synthesis (Web Speech API).
+        For best experience, use Chrome or Edge with an internet connection.
       </p>
     </div>
   </div>

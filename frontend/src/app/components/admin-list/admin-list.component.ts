@@ -56,7 +56,7 @@ export class AdminListComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Erreur lors du chargement des participants.';
+        this.error = 'Error loading participants.';
         console.error(err);
       }
     });
@@ -76,60 +76,60 @@ export class AdminListComponent implements OnInit {
   }
 
   acceptParticipant(participant: Participant): void {
-    if (!confirm(`Accepter l'inscription de ${participant.first_name} ${participant.last_name} ?`)) {
+    if (!confirm(`Accept registration for ${participant.first_name} ${participant.last_name}?`)) {
       return;
     }
 
     this.apiService.acceptParticipant(participant.id).subscribe({
       next: (response) => {
         if (response.ok) {
-          this.success = `${participant.first_name} ${participant.last_name} a été accepté(e).`;
+          this.success = `${participant.first_name} ${participant.last_name} has been accepted.`;
           this.loadParticipants();
           setTimeout(() => this.success = null, 3000);
         }
       },
       error: (err) => {
-        this.error = err.error?.message || 'Erreur lors de l\'acceptation.';
+        this.error = err.error?.message || 'Error during acceptance.';
         setTimeout(() => this.error = null, 3000);
       }
     });
   }
 
   rejectParticipant(participant: Participant): void {
-    if (!confirm(`Rejeter l'inscription de ${participant.first_name} ${participant.last_name} ?`)) {
+    if (!confirm(`Reject registration for ${participant.first_name} ${participant.last_name}?`)) {
       return;
     }
 
     this.apiService.rejectParticipant(participant.id).subscribe({
       next: (response) => {
         if (response.ok) {
-          this.success = `${participant.first_name} ${participant.last_name} a été rejeté(e).`;
+          this.success = `${participant.first_name} ${participant.last_name} has been rejected.`;
           this.loadParticipants();
           setTimeout(() => this.success = null, 3000);
         }
       },
       error: (err) => {
-        this.error = err.error?.message || 'Erreur lors du rejet.';
+        this.error = err.error?.message || 'Error during rejection.';
         setTimeout(() => this.error = null, 3000);
       }
     });
   }
 
   deleteParticipant(participant: Participant): void {
-    if (!confirm(`Supprimer définitivement ${participant.first_name} ${participant.last_name} ? Cette action est irréversible.`)) {
+    if (!confirm(`Permanently delete ${participant.first_name} ${participant.last_name}? This action is irreversible.`)) {
       return;
     }
 
     this.apiService.deleteParticipant(participant.id).subscribe({
       next: (response) => {
         if (response.ok) {
-          this.success = `${participant.first_name} ${participant.last_name} a été supprimé(e).`;
+          this.success = `${participant.first_name} ${participant.last_name} has been deleted.`;
           this.loadParticipants();
           setTimeout(() => this.success = null, 3000);
         }
       },
       error: (err) => {
-        this.error = err.error?.message || 'Erreur lors de la suppression.';
+        this.error = err.error?.message || 'Error during deletion.';
         setTimeout(() => this.error = null, 3000);
       }
     });
@@ -145,8 +145,8 @@ export class AdminListComponent implements OnInit {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        this.error = 'Erreur lors du téléchargement du badge.';
+      error: () => {
+        this.error = 'Error downloading badge.';
         setTimeout(() => this.error = null, 3000);
       }
     });
@@ -167,23 +167,23 @@ export class AdminListComponent implements OnInit {
   getStatusLabel(status: string): string {
     switch (status) {
       case 'accepted':
-        return 'Accepté';
+        return 'Accepted';
       case 'rejected':
-        return 'Rejeté';
+        return 'Rejected';
       case 'pending':
       default:
-        return 'En attente';
+        return 'Pending';
     }
   }
 
   getAccessTypeLabel(accessType: string): string {
     switch (accessType) {
       case 'foire':
-        return 'Foire';
+        return 'Fair';
       case 'conference':
-        return 'Conférence';
+        return 'Conference';
       case 'both':
-        return 'Foire + Conférence';
+        return 'Fair + Conference';
       default:
         return accessType;
     }
@@ -205,9 +205,9 @@ export class AdminListComponent implements OnInit {
 
   copyToClipboard(text: string): void {
     navigator.clipboard.writeText(text).then(() => {
-      alert('QR Token copié dans le presse-papiers!');
+      alert('QR Token copied to clipboard!');
     }).catch(err => {
-      console.error('Erreur lors de la copie:', err);
+      console.error('Error copying:', err);
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = text;
@@ -215,7 +215,7 @@ export class AdminListComponent implements OnInit {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('QR Token copié dans le presse-papiers!');
+      alert('QR Token copied to clipboard!');
     });
   }
 

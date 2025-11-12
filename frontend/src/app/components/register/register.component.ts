@@ -9,14 +9,13 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { RegisterParticipantRequest } from '../../models/participant.model';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css'],
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
   registerForm: FormGroup;
@@ -24,6 +23,7 @@ export class RegisterComponent {
   loading = false;
   submitted = false;
   error: string | null = null;
+  success: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -39,31 +39,38 @@ export class RegisterComponent {
       gender: ['', Validators.required],
       phone: [
         '',
-        [Validators.maxLength(30), Validators.pattern(/^[\+]?[0-9\s\-\(\)]+$/)],
+        [Validators.maxLength(30), Validators.pattern(/^[+]?\d[0-9\s\-()]+$/)],
       ],
       email: [
         '',
         [Validators.required, Validators.email, Validators.maxLength(255)],
       ],
-      access_type: ['foire', Validators.required],
+      access_type: ['fair', Validators.required], // default to 'fair'
     });
 
+    // Ensure access_type updates correctly based on checkbox
     this.conferenceAccess.valueChanges.subscribe((checked: boolean) => {
-      const accessType = checked ? 'both' : 'foire';
-      this.registerForm.patchValue({ access_type: accessType });
+      this.registerForm.patchValue({ access_type: checked ? 'both' : 'fair' }, { emitEvent: false });
     });
+
+// Optional: Ensure initial value is always valid
+    if (!this.registerForm.get('access_type')?.value) {
+      this.registerForm.patchValue({ access_type: 'fair' }, { emitEvent: false });
+    }
   }
 
+  // Getter
   get f() {
     return this.registerForm.controls;
   }
 
+// Human-readable
   getSelectedAccessType(): string {
     const accessType = this.registerForm.get('access_type')?.value;
-    return accessType === 'both' ? 'Foire et Conférence' : 'Foire uniquement';
+    return accessType === 'both' ? 'Fair and Conference' : 'Fair only';
   }
 
-onSubmit(): void {
+  onSubmit(): void {
     this.submitted = true;
     if (this.registerForm.invalid) return;
 
@@ -72,31 +79,35 @@ onSubmit(): void {
       next: (response) => {
         this.loading = false;
         if (response.ok) {
-          alert(response.message);
+          this.success = response.message || 'Registration successful!';
+          this.autoDismissToast('success');
 
-          // ✅ Safe, logged, zone-aware navigation
+          // Navigate to badge page with state
           this.ngZone.run(async () => {
-            try {
-              const success = await this.router.navigate(['/badge'], {
-                state: {
-                  qrCode: response.qr,
-                  participantName: `${response.participant.first_name} ${response.participant.last_name}`,
-                  emailSent: response.email_sent ?? true,
-                },
-              });
-              console.log('🧭 Navigation', success ? 'succeeded' : 'failed');
-               console.log('📍 Current URL:', this.router.url);
-            } catch (err) {
-              console.error('💥 Navigation error:', err);
-            }
+            await this.router.navigate(['/badge'], {
+              state: {
+                qrCode: response.qr,
+                participantName: `${response.participant.first_name} ${response.participant.last_name}`,
+                emailSent: response.email_sent ?? true,
+              },
+            });
           });
         }
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Une erreur est survenue.';
-        // ... error handling
+        this.error = err.error?.message || 'An error occurred.';
+        this.autoDismissToast('error');
       },
     });
   }
+
+// Auto-dismiss toast after 4 seconds
+  autoDismissToast(type: 'error' | 'success') {
+    setTimeout(() => {
+      if (type === 'error') this.error = null;
+      if (type === 'success') this.success = null;
+    }, 8000);
+  }
+
 }
