@@ -87,7 +87,6 @@ ngOnInit(): void {
         <body>
           <div class="badge-container">
             <h2>Event Access Badge</h2>
-            <div>${this.participantGender}</div>
             <div>${this.participantName}</div>
             <div>${this.acessType}</div>
             <div class="qr-code">
