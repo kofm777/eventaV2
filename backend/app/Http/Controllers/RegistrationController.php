@@ -54,6 +54,9 @@ class RegistrationController extends Controller
                 'qr_payload' => $qrPayload,
                 'qr_image' => $qrData['qr_image'],
             ]);
+// After generating QR
+\Log::info('QR Length: ' . strlen($qrData['qr_image'])); // Should be > 1000
+\Log::info('QR Sample: ' . substr($qrData['qr_image'], 0, 30));
 
             // Send email with QR code
             try {

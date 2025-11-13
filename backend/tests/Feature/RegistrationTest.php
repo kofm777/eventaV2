@@ -15,7 +15,7 @@ class RegistrationTest extends TestCase
         $data = [
             'first_name' => 'Jean',
             'last_name' => 'Dupont',
-            'gender' => 'Homme',
+            'gender' => 'Male',
             'phone' => '+33 6 12 34 56 78',
             'email' => 'jean.dupont@example.com',
             'access_type' => 'both',
@@ -59,7 +59,7 @@ class RegistrationTest extends TestCase
         $data = [
             'first_name' => 'Jean',
             'last_name' => 'Dupont',
-            'gender' => 'Homme',
+            'gender' => 'Male',
             'email' => 'invalid-email',
             'access_type' => 'foire',
         ];
@@ -79,7 +79,7 @@ class RegistrationTest extends TestCase
         $data = [
             'first_name' => 'Jean',
             'last_name' => 'Dupont',
-            'gender' => 'Homme',
+            'gender' => 'Male',
             'email' => 'existing@example.com',
             'access_type' => 'foire',
         ];
@@ -111,7 +111,7 @@ class RegistrationTest extends TestCase
         $data = [
             'first_name' => 'Jean',
             'last_name' => 'Dupont',
-            'gender' => 'Homme',
+            'gender' => 'Male',
             'email' => 'jean@example.com',
             'access_type' => 'invalid',
         ];

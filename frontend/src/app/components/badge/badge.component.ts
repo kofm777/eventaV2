@@ -44,6 +44,10 @@ ngOnInit(): void {
   printQR(): void {
     if (!this.qrCode) return;
 
+    const src = this.qrCode.startsWith('data:image')
+        ? this.qrCode
+        : `data:image/png;base64,${this.qrCode}`;
+
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -57,9 +61,7 @@ ngOnInit(): void {
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               background: #f3f4f6;
             }
-
             .badge-container {
-              width: 100%;
               max-width: 380px;
               margin: 40px auto;
               padding: 25px;
@@ -67,84 +69,53 @@ ngOnInit(): void {
               background: white;
               border: 2px solid #2563eb;
               box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-              display: flex;
-              flex-direction: column;
-              align-items: center;
               text-align: center;
             }
-
-            .badge-header {
-              font-size: 20px;
-              font-weight: 700;
-              color: #2563eb;
-              margin-bottom: 20px;
-            }
-
-            .participant-name {
-              font-size: 18px;
-              font-weight: 600;
-              margin: 10px 0;
-            }
-
-            .qr-code {
-              margin: 20px 0;
-            }
-
             .qr-code img {
               max-width: 180px;
-              height: auto;
               border: 2px solid #2563eb;
               border-radius: 8px;
               padding: 8px;
               background: #fff;
             }
-
-            .instructions {
-              font-size: 12px;
-              color: #555;
-              margin-top: 10px;
-            }
-
-            .footer {
-              margin-top: 15px;
-              font-size: 10px;
-              color: #888;
-            }
-
             @media print {
               body { background: none; }
-              .badge-container {
-                box-shadow: none;
-                border: 2px solid #2563eb;
-                page-break-inside: avoid;
-              }
+              .badge-container { box-shadow: none; }
             }
           </style>
         </head>
         <body>
           <div class="badge-container">
-            <div class="badge-header">Event Access Badge</div>
-            <div class="participant-name">${this.participantGender}</div>
-            <div class="participant-name">${this.participantName}</div>
-             <div class="participant-name">${this.acessType}</div>
+            <h2>Event Access Badge</h2>
+            <div>${this.participantGender}</div>
+            <div>${this.participantName}</div>
+            <div>${this.acessType}</div>
             <div class="qr-code">
-              <img src="data:image/png;base64,${this.qrCode}" alt="QR Code" />
+              <img src="${src}" alt="QR Code" />
             </div>
-            <div class="instructions">
-              Show this QR code at the event entrance
-            </div>
-            <div class="footer">
-              Generated on ${new Date().toLocaleDateString('en-GB')}
-            </div>
+            <p>Show this QR code at the event entrance</p>
           </div>
         </body>
       </html>
     `);
+
       printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
+
+      const img = printWindow.document.querySelector('img');
+      if (img) {
+        img.addEventListener('load', () => {
+          printWindow.focus();
+          printWindow.print();
+        });
+      } else {
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+        }, 500);
+      }
     }
   }
+
 
 
   registerAnother(): void {

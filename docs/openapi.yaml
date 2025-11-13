@@ -273,7 +273,7 @@ components:
           maxLength: 255
         gender:
           type: string
-          enum: [Homme, Femme, Autre]
+          enum: [Male, Female, Other]
         phone:
           type: string
           maxLength: 30
@@ -424,7 +424,7 @@ components:
           type: string
         gender:
           type: string
-          enum: [Homme, Femme, Autre]
+          enum: [Male, Female, Other]
         phone:
           type: string
         email:

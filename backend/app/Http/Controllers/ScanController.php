@@ -107,18 +107,15 @@ public function scan(Request $request): JsonResponse
             ], 404);
         }
 
-        if (!$participant->isAccepted()) {
-            Log::warning('Non-accepted participant tried to scan', [
-                'participant_id' => $participant->id,
-                'status' => $participant->status,
-            ]);
-
-            return response()->json([
-                'ok' => false,
-                'message' => 'Access denied. Your registration is not yet validated.',
-                'participant' => $participant->only(['id', 'first_name', 'last_name', 'status']),
-            ], 403);
-        }
+       if (!$participant->isAccepted()) {
+           return response()->json([
+               'ok' => false,
+               'message' => 'Access denied. Your registration is not yet approved.',
+               'participant' => $participant->only([
+                   'id', 'first_name', 'last_name', 'company_name', 'gender', 'email', 'access_type', 'status'
+               ]),
+           ], 403);
+       }
 
         // Create scan record
         $scan = Scan::create([

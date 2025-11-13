@@ -1,148 +1,150 @@
 <div class="container">
-  <div class="scanner-header">
-    <h2>Scan QR Code</h2>
-    <p class="subtitle">Scan participants' QR codes to record their entry</p>
-  </div>
-
-  <div class="scanner-layout">
-    <div class="scanner-section">
-      <div class="card">
-        <h3>Scan with Camera</h3>
-
-        <div class="form-group">
-          <label class="form-label">Scanner Name (optional)</label>
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="scannerUser"
-            placeholder="e.g. Main Entrance"
-          />
-        </div>
-
-          <div class="video-container">
-              <!-- Show video if a camera is selected (even before scanning starts) -->
-              <video #video
-                     class="scanner-video"
-                     [class.hidden]="!selectedCamera"
-                     muted playsinline></video>
-
-              <!-- Show placeholder only if no camera selected -->
-              <div *ngIf="!selectedCamera" class="video-placeholder">
-                  <p>📷</p>
-                  <p>Select a camera to begin scanning</p>
-              </div>
-
-              <!-- Show permission/error overlay if needed -->
-              <div *ngIf="error && error.includes('permissions')" class="video-overlay">
-                  <p>🛑 Camera permission denied.<br>Please allow camera access and refresh.</p>
-              </div>
-          </div>
-
-        <div class="scanner-controls">
-          <button
-            *ngIf="!scanning"
-            class="btn btn-primary btn-large"
-            (click)="startScanning()"
-            [disabled]="!selectedCamera"
-          >
-            Start Scanner
-          </button>
-          <button
-            *ngIf="scanning"
-            class="btn btn-danger btn-large"
-            (click)="stopScanning()"
-          >
-            Stop Scanner
-          </button>
-        </div>
-
-        <div class="video-container">
-          <video #video class="scanner-video" [class.active]="scanning"></video>
-          <div *ngIf="!scanning" class="video-placeholder">
-            <p>📷</p>
-            <p>Camera will appear here</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Manual Entry</h3>
-        <p class="help-text">If the scanner does not work, you can enter the code manually</p>
-
-        <div class="form-group">
-          <label class="form-label">QR Code</label>
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="manualQrCode"
-            (keyup.enter)="scanManualCode()"
-            placeholder="Paste QR code here"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Or upload a QR image</label>
-          <input
-            type="file"
-            class="form-control"
-            accept="image/*"
-            (change)="onFileSelected($event)"
-          />
-        </div>
-
-        <button class="btn btn-primary" (click)="scanManualCode()">
-          Check Code
-        </button>
-      </div>
+    <div class="scanner-header">
+        <h2>Scan QR Code</h2>
+        <p class="subtitle">Scan participants' QR codes to record their entry</p>
     </div>
 
-    <div class="results-section">
-      <!-- Speaker Avatar Component -->
-      <app-speaker-avatar
-        *ngIf="lastScanResult"
-        [participantName]="lastScanResult.first_name + ' ' + lastScanResult.last_name"
-        [gender]="lastScanResult.gender"
-        [accessStatus]="success ? 'Accepted' : 'Denied'"
-        [accessType]="lastScanResult.access_type"
-        [autoPlay]="true"
-      ></app-speaker-avatar>
+    <div class="scanner-layout">
+        <div class="scanner-section">
+            <div class="card">
+                <h3>Scan with Camera</h3>
 
-      <div class="card">
-        <h3>Scan Result</h3>
+                <div class="form-group">
+                    <label class="form-label">Scanner Name (optional)</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            [(ngModel)]="scannerUser"
+                            placeholder="e.g. Main Entrance"
+                    />
+                </div>
 
-        <div *ngIf="!success && !error && !lastScanResult" class="empty-state">
-          <p>Waiting for scan...</p>
+                <!-- ONLY ONE VIDEO CONTAINER -->
+                <div class="video-container">
+                    <video #video
+                           class="scanner-video"
+                           [class.hidden]="!selectedCamera"
+                           muted playsinline></video>
+
+                    <div *ngIf="!selectedCamera" class="video-placeholder">
+                        <p>📷</p>
+                        <p>Select a camera to begin scanning</p>
+                    </div>
+
+                    <div *ngIf="error && error.includes('permissions')" class="video-overlay">
+                        <p>🛑 Camera permission denied.<br>Please allow camera access and refresh.</p>
+                    </div>
+                </div>
+
+                <!-- Camera selection (for desktop with multiple cams) -->
+                <div class="form-group" *ngIf="cameras.length > 1">
+                    <label class="form-label">Select a camera</label>
+                    <select
+                            class="form-control"
+                            [(ngModel)]="selectedCamera"
+                            (ngModelChange)="onCameraSelected($event)">
+                        <option value="">Choose a camera...</option>
+                        <option *ngFor="let camera of cameras" [value]="camera.deviceId">
+                            {{ camera.label || ('Camera ' + camera.deviceId.substring(0, 8)) }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="scanner-controls">
+                    <button
+                            *ngIf="!scanning"
+                            class="btn btn-primary btn-large"
+                            (click)="startScanning()"
+                            [disabled]="!selectedCamera"
+                    >
+                        Start Scanner
+                    </button>
+                    <button
+                            *ngIf="scanning"
+                            class="btn btn-danger btn-large"
+                            (click)="stopScanning()"
+                    >
+                        Stop Scanner
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Manual Entry</h3>
+                <p class="help-text">If the scanner does not work, you can enter the code manually</p>
+
+                <div class="form-group">
+                    <label class="form-label">QR Code</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            [(ngModel)]="manualQrCode"
+                            (keyup.enter)="scanManualCode()"
+                            placeholder="Paste QR code here"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Or upload a QR image</label>
+                    <input
+                            type="file"
+                            class="form-control"
+                            accept="image/*"
+                            (change)="onFileSelected($event)"
+                    />
+                </div>
+
+                <button class="btn btn-primary" (click)="scanManualCode()">
+                    Check Code
+                </button>
+            </div>
         </div>
 
-        <div *ngIf="success" class="alert alert-success scan-result">
-          <div class="result-icon">✓</div>
-          <h4>{{ success }}</h4>
-          <div *ngIf="lastScanResult" class="participant-details">
-            <p><strong>Name:</strong> {{ lastScanResult.first_name }} {{ lastScanResult.last_name }}</p>
-            <p><strong>Company Name:</strong> {{ lastScanResult.company_name }}</p>
-            <p><strong>Email:</strong> {{ lastScanResult.email }}</p>
-            <p><strong>Gender:</strong> {{ lastScanResult.gender }}</p>
-            <p><strong>Access:</strong> {{ getAccessTypeLabel(lastScanResult.access_type) }}</p>
-          </div>
-        </div>
+        <div class="results-section">
+            <!-- Avatar without autoPlay -->
+            <!-- This must be present -->
+            <app-speaker-avatar
+                    *ngIf="lastScanResult"
+                    [participantName]="lastScanResult.first_name + ' ' + lastScanResult.last_name"
+                    [gender]="lastScanResult.gender"
+                    [accessStatus]="success ? 'Accepted' : 'Denied'"
+                    [accessType]="lastScanResult.access_type"
+                    [autoPlay]="true"
+            ></app-speaker-avatar>
 
-        <div *ngIf="error" class="alert alert-error scan-result">
-          <div class="result-icon">✗</div>
-          <h4>{{ error }}</h4>
-        </div>
-      </div>
+            <div class="card">
+                <h3>Scan Result</h3>
+                <div *ngIf="!success && !error && !lastScanResult" class="empty-state">
+                    <p>Waiting for scan...</p>
+                </div>
 
-      <div class="card">
-        <h3>Instructions</h3>
-        <ul class="instructions-list">
-          <li>Select a camera from the list</li>
-          <li>Click "Start Scanner"</li>
-          <li>Present the QR code in front of the camera</li>
-          <li>The system will automatically verify the code</li>
-          <li>A confirmation or error message will be displayed</li>
-          <li>The scanner will automatically restart after each scan</li>
-        </ul>
-      </div>
+                <div *ngIf="success" class="alert alert-success scan-result">
+                    <div class="result-icon">✓</div>
+                    <h4>{{ success }}</h4>
+                    <div *ngIf="lastScanResult" class="participant-details">
+                        <p><strong>Name:</strong> {{ lastScanResult.first_name }} {{ lastScanResult.last_name }}</p>
+                        <p><strong>Company Name:</strong> {{ lastScanResult.company_name }}</p>
+                        <p><strong>Email:</strong> {{ lastScanResult.email }}</p>
+                        <p><strong>Gender:</strong> {{ lastScanResult.gender }}</p>
+                        <p><strong>Access:</strong> {{ getAccessTypeLabel(lastScanResult.access_type) }}</p>
+                    </div>
+                </div>
+
+                <div *ngIf="error" class="alert alert-error scan-result">
+                    <div class="result-icon">✗</div>
+                    <h4>{{ error }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Instructions</h3>
+            <ul class="instructions-list">
+                <li>Select a camera</li>
+                <li>Click "Start Scanner"</li>
+                <li>Present QR code to camera</li>
+                <li>Result appears automatically</li>
+                <li>Click "Read Welcome Message" to hear audio</li>
+            </ul>
+        </div>
     </div>
-  </div>
 </div>

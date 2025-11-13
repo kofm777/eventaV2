@@ -107,7 +107,7 @@ make seed
 2. **Fill Registration Form**:
    - First Name: Jean
    - Last Name: Dupont
-   - Gender: Homme
+   - Gender: Male
    - Email: jean.dupont@test.com
    - Access Type: Foire et Conférence
 3. **Submit**: Click "S'inscrire"

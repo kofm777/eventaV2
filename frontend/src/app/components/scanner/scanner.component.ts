@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef,NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
@@ -30,14 +30,13 @@ export class ScannerComponent implements OnInit, OnDestroy {
     this.codeReader = new BrowserMultiFormatReader();
   }
 
-  async ngOnInit() {
-    await this.loadCameras();
-
-    // Auto-start on mobile (if only one camera)
-    if (this.cameras.length === 1) {
-      this.selectedCamera = this.cameras[0].deviceId;
-      this.startScanning();
-    }
+  ngOnInit() {
+    this.loadCameras().then(() => {
+      if (this.cameras.length === 1) {
+        this.selectedCamera = this.cameras[0].deviceId;
+        this.startScanning();
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -49,7 +48,6 @@ export class ScannerComponent implements OnInit, OnDestroy {
       const devices = await this.codeReader.listVideoInputDevices();
       this.cameras = devices;
       if (devices.length > 0 && !this.selectedCamera) {
-        // Auto-select first camera (common on mobile)
         this.selectedCamera = devices[0].deviceId;
       }
     } catch (err) {
@@ -58,7 +56,6 @@ export class ScannerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ Auto-start scanning when camera is selected
   onCameraSelected(deviceId: string) {
     if (deviceId) {
       this.selectedCamera = deviceId;
@@ -81,10 +78,8 @@ export class ScannerComponent implements OnInit, OnDestroy {
           this.videoElement.nativeElement,
           (result, err) => {
             if (result) {
-              // Run in NgZone to ensure UI updates
               this.ngZone.run(() => {
-                const qrCode = result.getText();
-                this.processTextScan(qrCode);
+                this.processTextScan(result.getText());
               });
             }
             if (err && !(err instanceof NotFoundException)) {
@@ -93,20 +88,16 @@ export class ScannerComponent implements OnInit, OnDestroy {
           }
       );
     } catch (err: unknown) {
-    console.error('Failed to start scanner:', err);
-    let errorMessage = 'Error starting camera. Try another device.';
-
-    if (err instanceof Error) {
-      if (err.name === 'NotAllowedError' || err.message.includes('NotAllowedError')) {
+      console.error('Failed to start scanner:', err);
+      let errorMessage = 'Error starting camera. Try another device.';
+      if (err instanceof Error && (err.name === 'NotAllowedError' || err.message.includes('NotAllowedError'))) {
         errorMessage = 'Camera permission denied. Please allow access and refresh.';
       }
+      this.ngZone.run(() => {
+        this.error = errorMessage;
+        this.scanning = false;
+      });
     }
-
-    this.ngZone.run(() => {
-      this.error = errorMessage;
-      this.scanning = false;
-    });
-  }
   }
 
   stopScanning() {
@@ -124,22 +115,15 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
     this.apiService.scan(scanData).subscribe({
       next: (response) => {
+        this.lastScanResult = response.participant || null;
         this.success = response.ok ? response.message : null;
         this.error = !response.ok ? response.message : null;
-        this.lastScanResult = response.ok ? response.participant : null;
 
         if (response.ok) {
           this.playSuccessSound();
         } else {
           this.playErrorSound();
         }
-
-        // Auto-restart scanning after 3 seconds
-        setTimeout(() => {
-          if (this.selectedCamera) {
-            this.startScanning();
-          }
-        }, 3000);
       },
       error: (err) => {
         this.error = err.error?.message || 'Verification failed.';
@@ -152,7 +136,7 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
   scanManualCode() {
     if (!this.manualQrCode.trim()) {
-      this.error = "Please enter a QR code.";
+      this.error = 'Please enter a QR code.';
       return;
     }
     this.processTextScan(this.manualQrCode);
@@ -180,19 +164,18 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
     this.apiService.scan(scanData).subscribe({
       next: (response) => {
+        this.lastScanResult = response.participant || null;
+        this.success = response.ok ? response.message : null;
+        this.error = !response.ok ? response.message : null;
+
         if (response.ok) {
-          this.success = response.message;
-          this.lastScanResult = response.participant;
           this.playSuccessSound();
         } else {
-          this.error = response.message;
-          this.lastScanResult = null;
           this.playErrorSound();
-          setTimeout(() => this.error = null, 3000);
         }
       },
       error: (err) => {
-        this.error = err.error?.message || "Error verifying QR code.";
+        this.error = err.error?.message || 'Error verifying QR code.';
         this.lastScanResult = null;
         this.playErrorSound();
         setTimeout(() => this.error = null, 3000);
@@ -201,41 +184,35 @@ export class ScannerComponent implements OnInit, OnDestroy {
   }
 
   playSuccessSound() {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.2);
+    this.playBeep(800, 0.2);
   }
 
   playErrorSound() {
+    this.playBeep(400, 0.3);
+  }
+
+  private playBeep(frequency: number, duration: number) {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    oscillator.frequency.value = 400;
+    oscillator.frequency.value = frequency;
     oscillator.type = 'sine';
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+    oscillator.stop(audioContext.currentTime + duration);
   }
 
   getAccessTypeLabel(accessType: string): string {
     switch (accessType) {
       case 'fair':
-        return 'fair';
+        return 'Fair only';
       case 'conference':
-        return 'Conférence';
+        return 'Conference only';
       case 'fair + conference':
-        return 'Foire + Conférence';
+        return 'Fair and Conference';
       default:
         return accessType;
     }

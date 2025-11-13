@@ -15,7 +15,7 @@ class TestParticipantSeeder extends Seeder
         Participant::create([
             'first_name' => 'John',
             'last_name' => 'Doe',
-            'gender' => 'Homme',
+            'gender' => 'Male',
             'phone' => '+33123456789',
             'email' => 'john.doe@example.com',
             'access_type' => 'both',
@@ -27,7 +27,7 @@ class TestParticipantSeeder extends Seeder
         Participant::create([
             'first_name' => 'Jane',
             'last_name' => 'Smith',
-            'gender' => 'Femme',
+            'gender' => 'Female',
             'phone' => '+33987654321',
             'email' => 'jane.smith@example.com',
             'access_type' => 'foire',

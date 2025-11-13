@@ -21,10 +21,10 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   @ViewChild('speakingVideo', { static: false }) speakingVideo!: ElementRef<HTMLVideoElement>;
 
   @Input() participantName: string = '';
-  @Input() gender: string = 'Femme';
+  @Input() gender: string = 'Female';
   @Input() autoPlay: boolean = true;
   @Input() accessStatus: string = 'Accepted'; // 'Accepted' or 'Denied'
-  @Input() accessType: string = 'fair + conference'; // 'foire', 'conference', 'both'
+  @Input() accessType: string = 'fair + conference';
 
   private synth: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
@@ -49,23 +49,28 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     // Start silent video
     if (this.silentVideo) {
       this.silentVideo.nativeElement.play().catch(e =>
-        console.warn('Silent video play failed:', e)
+          console.warn('Silent video play failed:', e)
       );
     }
 
-    // Auto start welcome if participant is set
+    // ✅ AUTO-PLAY TTS IMMEDIATELY if data is ready
     if (this.autoPlay && this.participantName) {
+      // Small delay ensures DOM/video are ready
       setTimeout(() => {
-        if (document.hasFocus()) {
-          this.playWelcomeMessage();
-        } else {
-          const handler = () => {
-            this.playWelcomeMessage();
-            document.removeEventListener('click', handler);
-          };
-          document.addEventListener('click', handler);
-        }
-      }, 800);
+        this.playWelcomeMessage();
+      }, 300);
+    }
+
+    // Auto-play TTS if autoPlay=true and data exists
+    if (this.autoPlay && this.participantName) {
+      // Wait for user interaction to avoid 'not-allowed' error
+      const playAfterInteraction = () => {
+        this.playWelcomeMessage();
+        document.removeEventListener('click', playAfterInteraction);
+        document.removeEventListener('keydown', playAfterInteraction);
+      };
+      document.addEventListener('click', playAfterInteraction);
+      document.addEventListener('keydown', playAfterInteraction);
     }
   }
 
@@ -74,49 +79,33 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     if (this.retryTimeout) clearTimeout(this.retryTimeout);
   }
 
-  /** Initialize and load English voices */
   private initVoices() {
     this.loadVoices();
-
     if (typeof speechSynthesis !== 'undefined') {
-      speechSynthesis.onvoiceschanged = () => {
-        this.loadVoices();
-      };
+      speechSynthesis.onvoiceschanged = () => this.loadVoices();
     }
   }
 
-  /** Load and select English female voice */
   private loadVoices() {
     const voices = this.synth.getVoices();
-
     if (!voices.length) {
       setTimeout(() => this.loadVoices(), 300);
       return;
     }
 
-    this.englishVoices = voices.filter(v =>
-      v.lang.toLowerCase().startsWith('en')
-    );
-
+    this.englishVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en'));
     this.selectedVoice =
-      this.englishVoices.find(v =>
-        ['female', 'woman', 'zira', 'samantha', 'google uk english female', 'google us english'].some(k =>
-          v.name.toLowerCase().includes(k)
-        )
-      ) || this.englishVoices[0] || voices[0];
+        this.englishVoices.find(v =>
+            ['female', 'woman', 'zira', 'samantha', 'google us english'].some(k =>
+                v.name.toLowerCase().includes(k)
+            )
+        ) || this.englishVoices.find(v => v.lang === 'en-US') || voices[0];
 
     this.voicesLoaded = true;
-
-    console.log('Loaded voices:', this.englishVoices.map(v => v.name));
-    console.log('Selected voice:', this.selectedVoice?.name);
   }
 
-  /** Play personalized welcome message */
   async playWelcomeMessage() {
-    if (!this.participantName) {
-      this.error = 'No participant name provided.';
-      return;
-    }
+    if (!this.participantName) return;
 
     if (!this.voicesLoaded) {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -126,29 +115,23 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     await this.speak(message);
   }
 
-  /** Build English welcome message */
   private generateWelcomeMessage(): string {
     const fullName = this.participantName.trim();
-    const honorific = this.getHonorific();
-
-    const statusMessage =
-      this.accessStatus === 'Accepted'
+    const honorific = this.gender === 'Male' ? 'Mr.' : 'Ms.';
+    const statusMsg = this.accessStatus === 'Accepted'
         ? 'Access granted. Welcome to our event.'
         : 'Access denied. Please contact the administration.';
 
-    const accessTypeMessage = this.getAccessTypeMessage();
-    const qrMessage =
-      this.accessStatus === 'Accepted'
+    const accessMsg = this.getAccessTypeMessage();
+    const qrMsg = this.accessStatus === 'Accepted'
         ? 'Your QR code has been successfully scanned.'
         : '';
 
-    return `Dear ${honorific} ${fullName}, ${statusMessage} ${accessTypeMessage} ${qrMessage}`.trim();
+    return `Dear ${honorific} ${fullName}, ${statusMsg} ${accessMsg} ${qrMsg}`.trim();
   }
 
   private getHonorific(): string {
-    if (this.gender === 'Homme') return 'Mr.';
-    if (this.gender === 'Femme') return 'Ms.';
-    return '';
+    return this.gender === 'Male' ? 'Mr.' : 'Ms.';
   }
 
   private getAccessTypeMessage(): string {
@@ -164,12 +147,8 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Speak using selected English voice */
   private async speak(text: string) {
-    if (!('speechSynthesis' in window)) {
-      this.error = 'Speech synthesis not supported.';
-      return;
-    }
+    if (!('speechSynthesis' in window)) return;
 
     if (this.synth.speaking) {
       this.synth.cancel();
@@ -181,7 +160,6 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
     this.utterance.rate = 0.95;
     this.utterance.pitch = 1.05;
     this.utterance.volume = 1.0;
-
     if (this.selectedVoice) this.utterance.voice = this.selectedVoice;
 
     this.utterance.onstart = () => {
@@ -207,20 +185,16 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
       this.isPlaying = false;
       if (event.error === 'interrupted') {
         this.retryTimeout = setTimeout(() => this.speak(text), 800);
-      } else {
-        this.error = 'TTS error.';
       }
     };
 
     this.synth.speak(this.utterance);
   }
 
-  /** Avatar video switching */
   private switchToSpeakingAvatar() {
     const silent = this.silentVideo?.nativeElement;
     const speaking = this.speakingVideo?.nativeElement;
-
-    if (silent) silent.pause();
+    if (silent && !silent.paused) silent.pause();
     if (speaking) {
       speaking.currentTime = 0;
       speaking.play().catch(e => console.warn('Speaking video play failed:', e));
@@ -230,17 +204,14 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   private switchToSilentAvatar() {
     const silent = this.silentVideo?.nativeElement;
     const speaking = this.speakingVideo?.nativeElement;
-
-    if (speaking) speaking.pause();
+    if (speaking && !speaking.paused) speaking.pause();
     if (silent) {
       silent.play().catch(e => console.warn('Silent video resume failed:', e));
     }
   }
 
   stopSpeaking() {
-    if (this.synth.speaking) {
-      this.synth.cancel();
-    }
+    if (this.synth.speaking) this.synth.cancel();
     this.isSpeaking = false;
     this.isPlaying = false;
   }
@@ -255,7 +226,7 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
         return 'Fair only';
       case 'conference':
         return 'Conference only';
-      case 'both':
+      case 'fair + conference':
         return 'Fair and Conference';
       default:
         return '';

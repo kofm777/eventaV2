@@ -135,7 +135,7 @@
             </div>
 
             <div class="details">
-                <strong>Gender:</strong> {{ $participant->gender === 'Homme' ? 'Mr.' : ($participant->gender === 'Femme' ? 'Ms.' : 'Other') }}
+                <strong>Gender:</strong> {{ $participant->gender === 'Male' ? 'Mr.' : ($participant->gender === 'Female' ? 'Ms.' : 'Other') }}
             </div>
             @if($participant->phone)
                 <div class="details"><strong>Phone:</strong> {{ $participant->phone }}</div>

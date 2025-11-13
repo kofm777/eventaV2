@@ -149,7 +149,7 @@
 - **Validation**: Format validated if provided
 
 #### Gender Field
-- **Options**: Homme, Femme, Autre
+- **Options**: Male, Female, Other
 - **Rationale**: Inclusive options
 - **Usage**: For personalization and statistics
 

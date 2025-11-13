@@ -3,7 +3,7 @@ export interface Participant {
   first_name: string;
   last_name: string;
   company_name: string;
-  gender: 'Homme' | 'Femme' | 'Autre';
+  gender: 'Male' | 'Female' | 'Other';
   phone?: string;
   email: string;
   access_type: 'fair' | 'fair + conference' | 'both';
@@ -19,7 +19,7 @@ export interface RegisterParticipantRequest {
   first_name: string;
   last_name: string;
   company_name: string;
-  gender: 'Homme' | 'Femme' | 'Autre';
+  gender: 'Male' | 'Female' | 'Other';
   phone?: string;
   email: string;
   access_type: 'fair' | 'fair + conference' | 'both';

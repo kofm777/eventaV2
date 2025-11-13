@@ -27,7 +27,7 @@ describe('Registration Flow', () => {
 
     cy.get('input[id="first_name"]').type('Jean');
     cy.get('input[id="last_name"]').type('Dupont');
-    cy.get('select[id="gender"]').select('Homme');
+    cy.get('select[id="gender"]').select('Male');
     cy.get('input[id="phone"]').type('+33 6 12 34 56 78');
     cy.get('input[id="email"]').type(email);
     cy.get('select[id="access_type"]').select('both');
@@ -58,7 +58,7 @@ describe('Registration Flow', () => {
     // First registration
     cy.get('input[id="first_name"]').type('Jean');
     cy.get('input[id="last_name"]').type('Dupont');
-    cy.get('select[id="gender"]').select('Homme');
+    cy.get('select[id="gender"]').select('Male');
     cy.get('input[id="email"]').type(email);
     cy.get('select[id="access_type"]').select('foire');
     cy.get('button[type="submit"]').click();

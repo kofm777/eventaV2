@@ -36,14 +36,14 @@ services:
       - DB_DATABASE=event_access
       - DB_USERNAME=eventaccess
       - DB_PASSWORD=secret
-      # Mail config for MailHog
+      # Mail config for OVH
       - MAIL_MAILER=smtp
-      - MAIL_HOST=mailhog
-      - MAIL_PORT=1025
-      - MAIL_USERNAME=
-      - MAIL_PASSWORD=
-      - MAIL_ENCRYPTION=
-      - MAIL_FROM_ADDRESS=no-reply@eventaccess.local
+      - MAIL_HOST=smtp.mail.ovh.net
+      - MAIL_PORT=587
+      - MAIL_USERNAME=no-reply-eventaccess@futuris.co
+      - MAIL_PASSWORD=eventaccessmailpwd
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=no-reply-eventaccess@futuris.co
       - MAIL_FROM_NAME="Event Access"
     depends_on:
       - mysql

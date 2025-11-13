@@ -51,24 +51,15 @@
       </p>
     </div>
 
-    <div class="avatar-controls">
-      <button
-        class="btn btn-primary"
-        (click)="playWelcomeMessage()"
-        [disabled]="!participantName || isSpeaking"
-      >
-        <span *ngIf="!isSpeaking">▶ Read message</span>
-        <span *ngIf="isSpeaking">🔊 In progress...</span>
-      </button>
-
-      <button
-        class="btn btn-secondary"
-        (click)="stopSpeaking()"
-        [disabled]="!isSpeaking"
-      >
-        ⏹ Stop
-      </button>
-    </div>
+      <div class="avatar-controls" *ngIf="!autoPlay">
+          <button class="btn btn-primary" (click)="playWelcomeMessage()" [disabled]="!participantName || isSpeaking">
+              <span *ngIf="!isSpeaking">▶ Read message</span>
+              <span *ngIf="isSpeaking">🔊 In progress...</span>
+          </button>
+          <button class="btn btn-secondary" (click)="stopSpeaking()" [disabled]="!isSpeaking">
+              ⏹ Stop
+          </button>
+      </div>
 
     <div class="avatar-footer">
       <p class="info-text">
