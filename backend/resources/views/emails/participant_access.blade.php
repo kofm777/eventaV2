@@ -6,154 +6,267 @@
     <title>Event Access</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            color: #1f2937;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
         }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
         .header {
             background-color: #2563eb;
-            color: white;
-            padding: 20px;
+            color: #fff;
+            padding: 25px 20px;
             text-align: center;
-            border-radius: 8px 8px 0 0;
         }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+
         .content {
-            background-color: #f8fafc;
-            padding: 30px;
-            border-radius: 0 0 8px 8px;
+            padding: 25px 20px;
         }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
         .status-pending {
-            background-color: #fbbf24;
-            color: #92400e;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 20px 0;
-            text-align: center;
+            background-color: #fef3c7;
+            color: #b45309;
         }
+
         .status-accepted {
-            background-color: #10b981;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 20px 0;
-            text-align: center;
+            background-color: #d1fae5;
+            color: #065f46;
         }
+
         .status-rejected {
-            background-color: #ef4444;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 20px 0;
-            text-align: center;
+            background-color: #fee2e2;
+            color: #b91c1c;
         }
+
         .qr-container {
             text-align: center;
-            margin: 30px 0;
+            margin: 25px 0;
             padding: 20px;
-            background-color: white;
-            border-radius: 8px;
+            background: #f3f4f6;
+            border-radius: 12px;
             border: 2px dashed #d1d5db;
         }
+
+        .qr-container img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
         .participant-info {
-            background-color: white;
+            background: #f9fafb;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin: 20px 0;
         }
+
+        .participant-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .participant-info li {
+            margin-bottom: 8px;
+        }
+
+        .instructions {
+            margin-top: 15px;
+            padding: 15px;
+            background: #eef2ff;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
         .footer {
             text-align: center;
-            margin-top: 30px;
-            font-size: 14px;
+            font-size: 12px;
             color: #6b7280;
+            padding: 15px;
+        }
+
+        @media screen and (max-width: 640px) {
+            .container {
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Event Access</h1>
-        <p>Event access management system</p>
-    </div>
-
-    <div class="content">
-        <h2>Hello {{ $participant->first_name }} {{ $participant->last_name }},</h2>
-
-        @if($emailType === 'deleted')
-            <div class="status-rejected">
-                <strong>Registration cancelled</strong>
-            </div>
-            <p>We inform you that your registration for the event has been cancelled by the administrator.</p>
-            <p>If you believe this is a mistake, feel free to contact us.</p>
-        @elseif($participant->status === 'pending')
-            <div class="status-pending">
-                <strong>Your access request is pending validation</strong>
-            </div>
-            <p>We have received your registration for the event. Your request is currently being reviewed by our team.</p>
-            <p>You will receive a new email once your registration is validated.</p>
-        @elseif($participant->status === 'accepted')
-            <div class="status-accepted">
-                <strong>Access confirmed — Welcome!</strong>
-            </div>
-            <p>Congratulations! Your registration has been accepted. You can now access the event.</p>
-
-            @if($qrImage)
-                <div class="qr-container">
-                    <h3>Your access QR Code</h3>
-                    <img src="data:image/png;base64,{{ $qrImage }}" alt="Access QR Code" style="max-width: 300px;">
-                    <p><small>Show this QR code at the event entrance</small></p>
-                </div>
-            @endif
-        @elseif($participant->status === 'rejected')
-            <div class="status-rejected">
-                <strong>Access denied</strong>
-            </div>
-            <p>We regret to inform you that your access request could not be accepted.</p>
-            <p>If you believe this is a mistake, feel free to contact us.</p>
-        @endif
-
-        <div class="participant-info">
-            <h3>Your registration information</h3>
-            <ul>
-                <li><strong>Name:</strong> {{ $participant->first_name }} {{ $participant->last_name }}</li>
-                <li><strong>Company Name:</strong> {{ $participant->company_name }}</li>
-                <li><strong>Email:</strong> {{ $participant->email }}</li>
-                <li><strong>Access Type:</strong>
-                    @if($participant->access_type === 'foire')
-                        Fair only
-                    @elseif($participant->access_type === 'conference')
-                        Conference only
-                    @else
-                        Fair and Conference
-                    @endif
-                </li>
-                <li><strong>Status:</strong>
-                    @if($participant->status === 'pending')
-                        Pending
-                    @elseif($participant->status === 'accepted')
-                        Accepted
-                    @else
-                        Denied
-                    @endif
-                </li>
-            </ul>
+    <div class="container">
+        <div class="header">
+            <h1>Event Access</h1>
+            <p>Event access management system</p>
         </div>
 
-        @if($participant->status === 'accepted')
-            <p><strong>Important instructions:</strong></p>
-            <ul>
-                <li>Keep this QR code safe</li>
-                <li>Show it at the event entrance</li>
-                <li>Make sure your phone is charged</li>
-                <li>You can also print this QR code</li>
-            </ul>
-        @endif
-    </div>
+        <div class="content">
+            <h2>Hello {{ $participant->first_name }} {{ $participant->last_name }},</h2>
 
-    <div class="footer">
-        <p>Event Access - Event management system</p>
-        <p>This email was sent automatically, please do not reply.</p>
+            {{-- Status messages --}}
+            @if($emailType === 'deleted')
+                <div class="status status-rejected">Registration cancelled</div>
+                <p>Your registration for the event has been cancelled by the administrator.</p>
+            @elseif($participant->status === 'pending')
+                <div class="status status-pending">Your access request is pending validation</div>
+                <p>Your registration is under review. You will receive an email once validated.</p>
+            @elseif($participant->status === 'accepted')
+                <div class="status status-accepted">Access confirmed — Welcome!</div>
+                <p>Congratulations! Your registration has been accepted.</p>
+
+                @if($qrImage)
+                    <div class="qr-container">
+                        <h3>Your Access QR Code</h3>
+                        <img src="data:image/png;base64,{{ $qrImage }}" alt="Access QR Code">
+                        <p><small>Show this QR code at the event entrance</small></p>
+                        <button onclick="printBadge()" style="margin-top:10px;padding:10px 20px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;">
+                                    Print Badge
+                                </button>
+                    </div>
+                 <script>
+                        function printBadge() {
+                            const qrImg = document.getElementById('qr-code-img');
+                            if (!qrImg) return;
+
+                            const printWindow = window.open('', '_blank');
+                            printWindow.document.write(`
+                                <html>
+                                <head>
+                                    <title>Badge - Event Access</title>
+                                    <style>
+                                        body {
+                                            font-family: Arial, sans-serif;
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+                                            height: 100vh;
+                                            margin: 0;
+                                            background: #f9fafb;
+                                        }
+                                        .badge-container {
+                                            border: 2px solid #2563eb;
+                                            border-radius: 12px;
+                                            padding: 30px;
+                                            text-align: center;
+                                            background: white;
+                                        }
+                                        .badge-container h2 {
+                                            color: #2563eb;
+                                            margin-bottom: 15px;
+                                        }
+                                        .badge-container img {
+                                            max-width: 250px;
+                                            height: auto;
+                                            margin-bottom: 15px;
+                                        }
+                                        .instructions {
+                                            font-size: 14px;
+                                            color: #333;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="badge-container">
+                                        <h2>Event Access Badge</h2>
+                                        <p><strong>{{ $participant->first_name }} {{ $participant->last_name }}</strong></p>
+                                        <img src="${qrImg.src}" alt="QR Code">
+                                        <div class="instructions">
+                                            Show this QR code at the event entrance.<br>
+                                            Access Type: {{ $participant->access_type === 'fair' ? 'Fair only' : ($participant->access_type === 'conference' ? 'Conference only' : 'Fair and Conference') }}
+                                        </div>
+                                    </div>
+                                </body>
+                                </html>
+                            `);
+                            printWindow.document.close();
+                            printWindow.print();
+                        }
+                    </script>
+                @endif
+            @elseif($participant->status === 'rejected')
+                <div class="status status-rejected">Access denied</div>
+                <p>We regret to inform you that your registration could not be accepted.</p>
+            @endif
+
+            {{-- Participant info --}}
+            <div class="participant-info">
+                <h3>Your Registration Information</h3>
+                <ul>
+                    <li><strong>Name:</strong> {{ $participant->first_name }} {{ $participant->last_name }}</li>
+                    <li><strong>Company Name:</strong> {{ $participant->company_name }}</li>
+                    <li><strong>Email:</strong> {{ $participant->email }}</li>
+                    <li><strong>Access Type:</strong>
+                        @if($participant->access_type === 'fair')
+                            Fair only
+                        @elseif($participant->access_type === 'conference')
+                            Conference only
+                        @else
+                            Fair and Conference
+                        @endif
+                    </li>
+                    <li><strong>Status:</strong>
+                        @if($participant->status === 'pending')
+                            Pending
+                        @elseif($participant->status === 'accepted')
+                            Accepted
+                        @else
+                            Denied
+                        @endif
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Instructions for accepted participants --}}
+            @if($participant->status === 'accepted')
+                <div class="instructions">
+                    <p><strong>Important Instructions:</strong></p>
+                    <ul>
+                        <li>Keep this QR code safe</li>
+                        <li>Show it at the event entrance</li>
+                        <li>Ensure your phone is charged</li>
+                        <li>You can also print this QR code</li>
+                    </ul>
+                </div>
+            @endif
+        </div>
+
+        <div class="footer">
+            <p>Event Access — Event management system</p>
+            <p>This email was sent automatically, please do not reply.</p>
+        </div>
     </div>
 </body>
 </html>

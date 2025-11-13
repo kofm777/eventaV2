@@ -28,7 +28,7 @@ class RegisterParticipantRequest extends FormRequest
             'gender' => ['required', 'in:Homme,Femme,Autre'],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[\+]?[0-9\s\-\(\)]+$/'],
             'email' => ['required', 'email', 'max:255', 'unique:participants,email'],
-            'access_type' => ['required', 'in:foire,conference,both'],
+            'access_type' => ['required', 'in:fair,fair + conference'],
         ];
     }
 
@@ -52,7 +52,7 @@ class RegisterParticipantRequest extends FormRequest
             'email.email' => 'Email address is invalid.',
             'email.unique' => 'This email address is already in use.',
             'access_type.required' => 'Access type is required.',
-            'access_type.in' => 'Access type must be foire, conference, or both.',
+            'access_type.in' => 'Access type must be fair or fair + conference.',
         ];
     }
 }

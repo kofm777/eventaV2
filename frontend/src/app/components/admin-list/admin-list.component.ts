@@ -178,11 +178,11 @@ export class AdminListComponent implements OnInit {
 
   getAccessTypeLabel(accessType: string): string {
     switch (accessType) {
-      case 'foire':
+      case 'fair':
         return 'Fair';
       case 'conference':
         return 'Conference';
-      case 'both':
+      case 'fair + conference':
         return 'Fair + Conference';
       default:
         return accessType;

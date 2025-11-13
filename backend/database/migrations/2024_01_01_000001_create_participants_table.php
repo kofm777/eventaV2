@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('gender', ['Homme', 'Femme', 'Autre']);
             $table->string('phone', 30)->nullable();
             $table->string('email')->unique();
-            $table->enum('access_type', ['foire', 'conference', 'both']);
+            $table->enum('access_type', ['fair', 'fair + conference']);
             $table->string('qr_token', 128)->nullable();
             $table->longText('qr_payload')->nullable(); // MariaDB compatibility
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');

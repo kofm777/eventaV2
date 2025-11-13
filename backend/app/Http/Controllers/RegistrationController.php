@@ -23,6 +23,8 @@ class RegistrationController extends Controller
     public function register(RegisterParticipantRequest $request): JsonResponse
     {
         try {
+            $accessType = trim($request->access_type);
+            Log::info('Access type received for registration', ['access_type' => $accessType]);
             // Create participant
             $participant = Participant::create([
                 'first_name' => $request->first_name,
@@ -31,7 +33,7 @@ class RegistrationController extends Controller
                 'gender' => $request->gender,
                 'phone' => $request->phone,
                 'email' => $request->email,
-                'access_type' => $request->access_type,
+                'access_type' => $accessType,
                 'status' => 'accepted', // Always accepted
             ]);
 

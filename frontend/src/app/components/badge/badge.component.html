@@ -9,7 +9,9 @@
 
         <section class="badge-body">
             <div class="participant-info">
+                <h2>{{ participantGender }}</h2>
                 <h2>{{ participantName }}</h2>
+                <h3>{{ acessType }}</h3>
                 <p class="email-status">
                     <span *ngIf="emailSent" class="email-sent">✓ Email sent successfully</span>
                     <span *ngIf="!emailSent" class="email-failed">⚠ Email failed</span>

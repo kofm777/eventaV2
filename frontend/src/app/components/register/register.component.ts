@@ -50,7 +50,7 @@ export class RegisterComponent {
 
     // Ensure access_type updates correctly based on checkbox
     this.conferenceAccess.valueChanges.subscribe((checked: boolean) => {
-      this.registerForm.patchValue({ access_type: checked ? 'both' : 'fair' }, { emitEvent: false });
+      this.registerForm.patchValue({ access_type: checked ? 'fair + conference' : 'fair' }, { emitEvent: false });
     });
 
 // Optional: Ensure initial value is always valid
@@ -67,27 +67,31 @@ export class RegisterComponent {
 // Human-readable
   getSelectedAccessType(): string {
     const accessType = this.registerForm.get('access_type')?.value;
-    return accessType === 'both' ? 'Fair and Conference' : 'Fair only';
+    return accessType === 'fair + conference' ? 'Fair and Conference' : 'Fair only';
   }
 
   onSubmit(): void {
     this.submitted = true;
     if (this.registerForm.invalid) return;
 
+    // Determine access type
+    const accessType = this.conferenceAccess.value ? 'fair + conference' : 'fair';
+    const payload = { ...this.registerForm.value, access_type: accessType };
+
     this.loading = true;
-    this.apiService.register(this.registerForm.value).subscribe({
+    this.apiService.register(payload).subscribe({
       next: (response) => {
         this.loading = false;
         if (response.ok) {
           this.success = response.message || 'Registration successful!';
           this.autoDismissToast('success');
-
-          // Navigate to badge page with state
           this.ngZone.run(async () => {
             await this.router.navigate(['/badge'], {
               state: {
                 qrCode: response.qr,
+                participantGender: response.participant.gender,
                 participantName: `${response.participant.first_name} ${response.participant.last_name}`,
+                accessType: accessType,
                 emailSent: response.email_sent ?? true,
               },
             });
@@ -101,6 +105,7 @@ export class RegisterComponent {
       },
     });
   }
+
 
 // Auto-dismiss toast after 4 seconds
   autoDismissToast(type: 'error' | 'success') {

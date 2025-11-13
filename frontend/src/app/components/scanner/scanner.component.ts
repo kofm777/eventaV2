@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef,NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
@@ -26,18 +26,17 @@ export class ScannerComponent implements OnInit, OnDestroy {
   cameras: MediaDeviceInfo[] = [];
   selectedCamera: string = '';
 
-  constructor(private apiService: ApiService) {
+  constructor(private apiService: ApiService, private ngZone: NgZone) {
     this.codeReader = new BrowserMultiFormatReader();
   }
 
   async ngOnInit() {
     await this.loadCameras();
 
-    // Auto-start if only one camera (typical on mobile)
+    // Auto-start on mobile (if only one camera)
     if (this.cameras.length === 1) {
       this.selectedCamera = this.cameras[0].deviceId;
-      // Delay to allow DOM to render
-      setTimeout(() => this.startScanning(), 300);
+      this.startScanning();
     }
   }
 
@@ -50,17 +49,19 @@ export class ScannerComponent implements OnInit, OnDestroy {
       const devices = await this.codeReader.listVideoInputDevices();
       this.cameras = devices;
       if (devices.length > 0 && !this.selectedCamera) {
+        // Auto-select first camera (common on mobile)
         this.selectedCamera = devices[0].deviceId;
       }
     } catch (err) {
-      console.error('Error loading cameras:', err);
-      this.error = "Unable to access the camera. Check permissions.";
+      console.error('Camera access error:', err);
+      this.error = 'Unable to access camera. Check permissions.';
     }
   }
 
-  // ✅ NEW: Auto-start when camera is selected
+  // ✅ Auto-start scanning when camera is selected
   onCameraSelected(deviceId: string) {
     if (deviceId) {
+      this.selectedCamera = deviceId;
       this.startScanning();
     } else {
       this.stopScanning();
@@ -68,10 +69,7 @@ export class ScannerComponent implements OnInit, OnDestroy {
   }
 
   async startScanning() {
-    if (!this.selectedCamera) {
-      this.error = "Please select a camera.";
-      return;
-    }
+    if (!this.selectedCamera) return;
 
     this.scanning = true;
     this.error = null;
@@ -83,19 +81,32 @@ export class ScannerComponent implements OnInit, OnDestroy {
           this.videoElement.nativeElement,
           (result, err) => {
             if (result) {
-              const qrCode = result.getText();
-              this.processTextScan(qrCode);
+              // Run in NgZone to ensure UI updates
+              this.ngZone.run(() => {
+                const qrCode = result.getText();
+                this.processTextScan(qrCode);
+              });
             }
             if (err && !(err instanceof NotFoundException)) {
-              console.error('Scan error:', err);
+              console.warn('Scanning error:', err);
             }
           }
       );
-    } catch (err) {
-      console.error('Error starting scanner:', err);
-      this.error = "Error starting scanner. Check camera permissions.";
-      this.scanning = false;
+    } catch (err: unknown) {
+    console.error('Failed to start scanner:', err);
+    let errorMessage = 'Error starting camera. Try another device.';
+
+    if (err instanceof Error) {
+      if (err.name === 'NotAllowedError' || err.message.includes('NotAllowedError')) {
+        errorMessage = 'Camera permission denied. Please allow access and refresh.';
+      }
     }
+
+    this.ngZone.run(() => {
+      this.error = errorMessage;
+      this.scanning = false;
+    });
+  }
   }
 
   stopScanning() {
@@ -113,25 +124,25 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
     this.apiService.scan(scanData).subscribe({
       next: (response) => {
+        this.success = response.ok ? response.message : null;
+        this.error = !response.ok ? response.message : null;
+        this.lastScanResult = response.ok ? response.participant : null;
+
         if (response.ok) {
-          this.success = response.message;
-          this.lastScanResult = response.participant;
           this.playSuccessSound();
-          // Auto-restart after 3 seconds
-          setTimeout(() => {
-            if (this.selectedCamera) {
-              this.startScanning();
-            }
-          }, 3000);
         } else {
-          this.error = response.message;
-          this.lastScanResult = null;
           this.playErrorSound();
-          setTimeout(() => this.error = null, 3000);
         }
+
+        // Auto-restart scanning after 3 seconds
+        setTimeout(() => {
+          if (this.selectedCamera) {
+            this.startScanning();
+          }
+        }, 3000);
       },
       error: (err) => {
-        this.error = err.error?.message || "Error verifying QR code.";
+        this.error = err.error?.message || 'Verification failed.';
         this.lastScanResult = null;
         this.playErrorSound();
         setTimeout(() => this.error = null, 3000);
@@ -219,11 +230,11 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
   getAccessTypeLabel(accessType: string): string {
     switch (accessType) {
-      case 'foire':
-        return 'Foire';
+      case 'fair':
+        return 'fair';
       case 'conference':
         return 'Conférence';
-      case 'both':
+      case 'fair + conference':
         return 'Foire + Conférence';
       default:
         return accessType;

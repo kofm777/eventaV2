@@ -23,7 +23,7 @@ class ParticipantFactory extends Factory
             'gender' => $this->faker->randomElement(['Homme', 'Femme', 'Autre']),
             'phone' => $this->faker->optional()->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),
-            'access_type' => $this->faker->randomElement(['foire', 'conference', 'both']),
+            'access_type' => $this->faker->randomElement(['fair', 'conference', 'both']),
             'status' => $this->faker->randomElement(['pending', 'accepted', 'rejected']),
         ];
     }

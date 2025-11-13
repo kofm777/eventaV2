@@ -27,20 +27,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy app
 COPY . /var/www/html
 
-# Clear cache
-RUN rm -rf bootstrap/cache/* 2>/dev/null || true
+# Fix permissions before running Composer
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install dependencies
+# Install dependencies as root
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Generate key
+# Generate application key as root
 RUN php artisan key:generate --no-interaction
 
-# Fix permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# Ensure storage/logs folder is writable at runtime
+RUN chmod -R 777 /var/www/html/storage/logs
 
+# Switch to www-data for security
 USER www-data
 
 EXPOSE 8000

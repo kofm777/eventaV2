@@ -19,20 +19,24 @@
           />
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Select a camera</label>
-            <!-- Inside "Select a camera" section -->
-            <select
-                    class="form-control"
-                    [(ngModel)]="selectedCamera"
-                    (ngModelChange)="onCameraSelected($event)"
-            >
-                <option value="">Choose a camera...</option>
-                <option *ngFor="let camera of cameras" [value]="camera.deviceId">
-                    {{ camera.label || 'Camera ' + camera.deviceId.substring(0, 8) }}
-                </option>
-            </select>
-        </div>
+          <div class="video-container">
+              <!-- Show video if a camera is selected (even before scanning starts) -->
+              <video #video
+                     class="scanner-video"
+                     [class.hidden]="!selectedCamera"
+                     muted playsinline></video>
+
+              <!-- Show placeholder only if no camera selected -->
+              <div *ngIf="!selectedCamera" class="video-placeholder">
+                  <p>📷</p>
+                  <p>Select a camera to begin scanning</p>
+              </div>
+
+              <!-- Show permission/error overlay if needed -->
+              <div *ngIf="error && error.includes('permissions')" class="video-overlay">
+                  <p>🛑 Camera permission denied.<br>Please allow camera access and refresh.</p>
+              </div>
+          </div>
 
         <div class="scanner-controls">
           <button

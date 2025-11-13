@@ -6,7 +6,7 @@ export interface Participant {
   gender: 'Homme' | 'Femme' | 'Autre';
   phone?: string;
   email: string;
-  access_type: 'foire' | 'conference' | 'both';
+  access_type: 'fair' | 'fair + conference' | 'both';
   status: 'pending' | 'accepted' | 'rejected';
   qr_token?: string;
   qr_payload?: any;
@@ -22,7 +22,7 @@ export interface RegisterParticipantRequest {
   gender: 'Homme' | 'Femme' | 'Autre';
   phone?: string;
   email: string;
-  access_type: 'foire' | 'conference' | 'both';
+  access_type: 'fair' | 'fair + conference' | 'both';
 }
 
 export interface RegisterResponse {

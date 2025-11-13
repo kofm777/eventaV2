@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="fr">
+g<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,8 +75,8 @@
         }
 
         .qr-code {
-            max-width: 200px;
-            max-height: 200px;
+            max-width: 100px;
+            max-height: 100px;
             margin: 4px 0;
         }
 
@@ -135,22 +135,22 @@
 
             <div class="access-type">
                 <?php if($participant->access_type === 'foire'): ?>
-                    Foire
+                    Fair
                 <?php elseif($participant->access_type === 'conference'): ?>
-                    Conférence
+                    Conference
                 <?php else: ?>
-                    Foire + Conférence
+                    Fair + Conference
                 <?php endif; ?>
             </div>
 
             <div class="details">
-                <strong>Genre:</strong> <?php echo e($participant->gender === 'Homme' ? 'M.' : ($participant->gender === 'Femme' ? 'Mme' : 'Autre')); ?>
+                <strong>Gender:</strong> <?php echo e($participant->gender === 'Homme' ? 'Mr.' : ($participant->gender === 'Femme' ? 'Ms.' : 'Other')); ?>
 
             </div>
 
             <?php if($participant->phone): ?>
                 <div class="details">
-                    <strong>Tél:</strong> <?php echo e($participant->phone); ?>
+                    <strong>Phone:</strong> <?php echo e($participant->phone); ?>
 
                 </div>
             <?php endif; ?>
@@ -159,14 +159,14 @@
         <div class="qr-section">
             <?php if($qr_image): ?>
                 <img src="data:image/png;base64,<?php echo e($qr_image); ?>" alt="QR Code" class="qr-code" />
-                <div class="qr-label">Code d'accès</div>
+                <div class="qr-label">Access Code</div>
             <?php else: ?>
-                <div class="qr-label">QR non disponible</div>
+                <div class="qr-label">QR not available</div>
             <?php endif; ?>
         </div>
 
         <div class="footer">
-            Généré le <?php echo e($generated_at); ?>
+            Generated on <?php echo e($generated_at); ?>
 
         </div>
     </div>

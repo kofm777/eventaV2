@@ -24,7 +24,7 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
   @Input() gender: string = 'Femme';
   @Input() autoPlay: boolean = true;
   @Input() accessStatus: string = 'Accepted'; // 'Accepted' or 'Denied'
-  @Input() accessType: string = 'both'; // 'foire', 'conference', 'both'
+  @Input() accessType: string = 'fair + conference'; // 'foire', 'conference', 'both'
 
   private synth: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
@@ -153,11 +153,11 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   private getAccessTypeMessage(): string {
     switch (this.accessType) {
-      case 'foire':
+      case 'fair':
         return 'You have access to the fair only.';
       case 'conference':
         return 'You have access to the conference only.';
-      case 'both':
+      case 'fair + conference':
         return 'You have access to both the fair and the conference.';
       default:
         return '';
@@ -251,7 +251,7 @@ export class SpeakerAvatarComponent implements OnInit, OnDestroy {
 
   getAccessTypeDisplay(): string {
     switch (this.accessType) {
-      case 'foire':
+      case 'fair':
         return 'Fair only';
       case 'conference':
         return 'Conference only';
