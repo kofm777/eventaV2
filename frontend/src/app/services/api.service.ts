@@ -49,7 +49,18 @@ scan(data: { payload?: string; qr_image?: string; scanner_user?: string }): Obse
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/admin/login`, credentials);
   }
+// Add these methods
+  scanFair(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
+    return this.http.post<ScanResponse>(`${this.apiUrl}/scan-fair`, data, {
+      withCredentials: true
+    });
+  }
 
+  scanConference(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
+    return this.http.post<ScanResponse>(`${this.apiUrl}/scan-conference`, data, {
+      withCredentials: true
+    });
+  }
   logout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/logout`, {}, {
       headers: this.getHeaders()

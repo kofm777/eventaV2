@@ -28,26 +28,29 @@ import { filter } from "rxjs/operators";
             </button>
 
             <div class="nav-links" [class.show]="menuOpen">
-              <!-- 🌐 Public Routes -->
-              <ng-container *ngIf="['/', '/home', '/register'].includes(currentUrl)">
+              <!-- 🌐 Public navigation: shown only on public routes -->
+              <ng-container *ngIf="!isAuthenticated && isPublicRoute">
                 <a routerLink="/home" class="nav-link" (click)="menuOpen=false">Home</a>
                 <a routerLink="/about" class="nav-link" (click)="menuOpen=false">About</a>
                 <a routerLink="/contact" class="nav-link" (click)="menuOpen=false">Contact</a>
                 <a routerLink="/register" class="nav-link register" (click)="menuOpen=false">Register</a>
               </ng-container>
 
-              <!-- 🔑 Admin Login -->
-              <a *ngIf="currentUrl === '/admin/login' && !isAuthenticated"
+              <!-- 🔑 Admin Login link: shown only when NOT authenticated and NOT on login page -->
+              <a *ngIf="!isAuthenticated && !isPublicRoute && currentUrl !== '/admin/login'"
                  routerLink="/admin/login"
                  class="nav-link"
                  (click)="menuOpen=false">
                 Admin
               </a>
 
-              <!-- 🔒 Authenticated Admin Routes -->
-              <ng-container *ngIf="isAuthenticated && ['/admin/scanner', '/admin/participants'].includes(currentUrl)">
+              <!-- 🔒 Authenticated Admin Navigation -->
+              <ng-container *ngIf="isAuthenticated">
                 <a routerLink="/admin/participants" class="nav-link" (click)="menuOpen=false">Participants</a>
-                <a routerLink="/admin/scanner" class="nav-link" (click)="menuOpen=false">Scanner</a>
+                <a routerLink="/admin/scanner" class="nav-link" (click)="menuOpen=false">Scanner (Fair)</a>
+                <a routerLink="/admin/scanner/conference" class="nav-link" (click)="menuOpen=false">Scanner (Conference)</a>
+                <a routerLink="/admin/avatar" class="nav-link" (click)="menuOpen=false">Avatar (Fair)</a>
+                <a routerLink="/admin/avatar/conference" class="nav-link" (click)="menuOpen=false">Avatar (Conference)</a>
                 <button (click)="logout(); menuOpen=false" class="btn-logout">Logout</button>
               </ng-container>
             </div>
@@ -257,6 +260,17 @@ export class AppComponent implements OnInit {
   menuOpen = false;
   isScrolled = false;
 
+  // ✅ Add this getter
+  get isPublicRoute(): boolean {
+    return [
+      '/',
+      '/home',
+      '/register',
+      '/about',
+      '/contact'
+    ].some(route => this.currentUrl === route || this.currentUrl.startsWith(route + '/'));
+  }
+
   constructor(private authService: AuthService, private router: Router) {
     this.authService.currentAdmin$.subscribe(admin => {
       this.isAuthenticated = !!admin;
@@ -267,18 +281,8 @@ export class AppComponent implements OnInit {
     this.router.events
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
         .subscribe((event: NavigationEnd) => {
-          this.currentUrl = event.url;
-
-          // Only redirect if the user is authenticated but trying to access a protected page
-          if (
-              this.isAuthenticated &&
-              ['/admin/login'].includes(this.currentUrl)
-          ) {
-            // Optionally redirect to default admin page
-            // this.router.navigate(['/admin/participants']);
-          }
+          this.currentUrl = event.url.split('?')[0]; // remove query params
         });
-
 
     window.addEventListener('scroll', () => {
       this.isScrolled = window.scrollY > 30;

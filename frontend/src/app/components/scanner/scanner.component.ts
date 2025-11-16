@@ -1,14 +1,15 @@
+// src/app/pages/scanner/scanner.component.ts
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import { ApiService } from '../../services/api.service';
-import { SpeakerAvatarComponent } from '../speaker-avatar/speaker-avatar.component';
+import { ScanBroadcastService } from '../../services/scan-broadcast.service';
 
 @Component({
   selector: 'app-scanner',
   standalone: true,
-  imports: [CommonModule, FormsModule, SpeakerAvatarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './scanner.component.html',
   styleUrls: ['./scanner.component.css']
 })
@@ -26,7 +27,11 @@ export class ScannerComponent implements OnInit, OnDestroy {
   cameras: MediaDeviceInfo[] = [];
   selectedCamera: string = '';
 
-  constructor(private apiService: ApiService, private ngZone: NgZone) {
+  constructor(
+      private apiService: ApiService,
+      private ngZone: NgZone,
+      private scanBroadcast: ScanBroadcastService
+  ) {
     this.codeReader = new BrowserMultiFormatReader();
   }
 
@@ -107,33 +112,43 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
   private processTextScan(qrCode: string) {
     this.stopScanning();
-
     const scanData = {
       payload: qrCode,
       scanner_user: this.scannerUser || undefined
     };
-
-    this.apiService.scan(scanData).subscribe({
-      next: (response) => {
-        this.lastScanResult = response.participant || null;
-        this.success = response.ok ? response.message : null;
-        this.error = !response.ok ? response.message : null;
-
-        if (response.ok) {
-          this.playSuccessSound();
-        } else {
-          this.playErrorSound();
-        }
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Verification failed.';
-        this.lastScanResult = null;
-        this.playErrorSound();
-        setTimeout(() => this.error = null, 3000);
-      }
+    this.apiService.scanFair(scanData).subscribe({
+      next: (response) => this.handleScanResult(response),
+      error: (err) => this.handleScanResult({ ok: false, message: err.error?.message || 'Verification failed.', participant: null })
     });
   }
 
+  private processImageScan(base64Image: string) {
+    const scanData = {
+      qr_image: base64Image,
+      scanner_user: this.scannerUser || undefined
+    };
+    this.apiService.scanFair(scanData).subscribe({
+      next: (response) => this.handleScanResult(response),
+      error: (err) => this.handleScanResult({ ok: false, message: err.error?.message || 'Error verifying QR code.', participant: null })
+    });
+  }
+
+  private handleScanResult(response: any) {
+    this.lastScanResult = response.participant || null;
+    this.success = response.ok ? response.message : null;
+    this.error = !response.ok ? response.message : null;
+
+    this.scanBroadcast.broadcastFair({
+      participant: response.participant || {},
+      is_already_scanned: response.is_already_scanned || false,
+      message: response.message || '',
+      scanType: 'fair'
+    });
+
+    if (response.ok) this.playSuccessSound();
+    else this.playErrorSound();
+    setTimeout(() => this.error = null, 3000);
+  }
   scanManualCode() {
     if (!this.manualQrCode.trim()) {
       this.error = 'Please enter a QR code.';
@@ -154,33 +169,6 @@ export class ScannerComponent implements OnInit, OnDestroy {
     };
     reader.readAsDataURL(file);
     event.target.value = '';
-  }
-
-  private processImageScan(base64Image: string) {
-    const scanData = {
-      qr_image: base64Image,
-      scanner_user: this.scannerUser || undefined
-    };
-
-    this.apiService.scan(scanData).subscribe({
-      next: (response) => {
-        this.lastScanResult = response.participant || null;
-        this.success = response.ok ? response.message : null;
-        this.error = !response.ok ? response.message : null;
-
-        if (response.ok) {
-          this.playSuccessSound();
-        } else {
-          this.playErrorSound();
-        }
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Error verifying QR code.';
-        this.lastScanResult = null;
-        this.playErrorSound();
-        setTimeout(() => this.error = null, 3000);
-      }
-    });
   }
 
   playSuccessSound() {

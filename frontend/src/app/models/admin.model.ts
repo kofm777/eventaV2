@@ -26,4 +26,5 @@ export interface ScanResponse {
   participant?: any;
   scan_id?: number;
   message: string;
+  is_already_scanned?: boolean;
 }

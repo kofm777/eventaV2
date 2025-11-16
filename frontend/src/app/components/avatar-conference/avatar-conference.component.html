@@ -1,0 +1,56 @@
+<!-- src/app/pages/avatar/avatar-page.component.html -->
+<div class="fullscreen-avatar">
+    <div class="avatar-card">
+        <div class="avatar-header">
+            <h3>GAICA AVATAR CONFERENCE</h3>
+        </div>
+        <div *ngIf="error" class="alert alert-error">
+            {{ error }}
+        </div>
+        <div class="avatar-video-container">
+            <video #silentVideo
+                   class="avatar-video"
+                   [class.hidden]="isSpeaking"
+                   muted
+                   loop
+                   playsinline
+                   (error)="onVideoError()">
+                <source src="assets/avatar/videos/silent_avatar.mp4" type="video/mp4" />
+            </video>
+            <video #speakingVideo
+                   class="avatar-video"
+                   [class.hidden]="!isSpeaking"
+                   muted
+                   loop
+                   playsinline
+                   (error)="onVideoError()">
+                <source src="assets/avatar/videos/speaking_avatar.mp4" type="video/mp4" />
+            </video>
+            <div *ngIf="isSpeaking" class="speaking-indicator">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </div>
+        <div class="avatar-info">
+            <p *ngIf="participantName" class="participant-name">
+                <strong>{{ participantName }}</strong>
+            </p>
+            <p *ngIf="participantName" class="access-status" [class.accepted]="accessStatus === 'Accepted'" [class.denied]="accessStatus === 'Denied'">
+                {{ accessStatus === 'Accepted' ? '✓ Access granted' : '✗ Access denied' }}
+            </p>
+            <p *ngIf="participantName" class="access-type">
+                {{ getAccessTypeDisplay() }}
+            </p>
+            <p *ngIf="!participantName" class="no-participant">
+                Waiting for a participant...
+            </p>
+        </div>
+        <div class="avatar-footer">
+            <p class="info-text">
+                <strong>Note:</strong> This component uses the browser's speech synthesis (Web Speech API).
+                For best experience, use Chrome or Edge with an internet connection.
+            </p>
+        </div>
+    </div>
+</div>

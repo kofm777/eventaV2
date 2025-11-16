@@ -7,7 +7,7 @@ export interface Participant {
   phone?: string;
   email: string;
   access_type: 'fair' | 'fair + conference' | 'both';
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'scanned';
   qr_token?: string;
   qr_payload?: any;
   qr_image?: string;

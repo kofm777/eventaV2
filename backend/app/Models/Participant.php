@@ -77,4 +77,13 @@ class Participant extends Model
     {
         return $this->status === 'rejected';
     }
+public function hasScannedFair(): bool
+{
+    return $this->scanned_fair;
+}
+
+public function hasScannedConference(): bool
+{
+    return $this->scanned_conference;
+}
 }

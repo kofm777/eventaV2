@@ -152,27 +152,23 @@ export class AdminListComponent implements OnInit {
     });
   }
 
-  getStatusBadgeClass(status: string): string {
+  getStatusLabel(status: string): string {
     switch (status) {
-      case 'accepted':
-        return 'badge-accepted';
-      case 'rejected':
-        return 'badge-rejected';
-      case 'pending':
-      default:
-        return 'badge-pending';
+      case 'pending': return 'Pending';
+      case 'accepted': return 'Accepted';
+      case 'rejected': return 'Rejected';
+      case 'scanned': return 'Scanned';
+      default: return status;
     }
   }
 
-  getStatusLabel(status: string): string {
+  getStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'accepted':
-        return 'Accepted';
-      case 'rejected':
-        return 'Rejected';
-      case 'pending':
-      default:
-        return 'Pending';
+      case 'pending': return 'badge-pending';
+      case 'accepted': return 'badge-accepted';
+      case 'rejected': return 'badge-rejected';
+      case 'scanned': return 'badge-scanned';
+      default: return '';
     }
   }
 
