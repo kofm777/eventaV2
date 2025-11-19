@@ -18,41 +18,59 @@ class AdminController extends Controller
         private PdfBadgeService $pdfBadgeService
     ) {}
 
-    /**
-     * Get all participants with optional filters
-     */
-    public function getParticipants(Request $request): JsonResponse
-    {
-        $query = Participant::query();
+/**
+ * Get all participants with optional filters
+ */
+public function getParticipants(Request $request): JsonResponse
+{
+    $query = Participant::query();
 
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
+    // Apply filters FIRST (on raw DB columns)
+    if ($request->has('status') && $request->status !== '') {
+        $status = $request->status;
+
+        if ($status === 'fair_scanned') {
+            $query->where('scanned_fair', true)
+                  ->where('scanned_conference', false);
+        } elseif ($status === 'conference_scanned') {
+            $query->where('scanned_conference', true);
+        } else {
+            $query->where('status', $status);
         }
-
-        // Filter by access type
-        if ($request->has('access_type') && $request->access_type !== '') {
-            $query->where('access_type', $request->access_type);
-        }
-
-        // Search by name or email or company name
-        if ($request->has('search') && $request->search !== '') {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%");
-            });
-        }
-
-        $participants = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        return response()->json([
-            'ok' => true,
-            'participants' => $participants,
-        ]);
     }
+
+    if ($request->has('access_type') && $request->access_type !== '') {
+        $query->where('access_type', $request->access_type);
+    }
+
+    if ($request->has('search') && $request->search !== '') {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%")
+              ->orWhere('company_name', 'like', "%{$search}%");
+        });
+    }
+
+    $participants = $query->orderBy('created_at', 'desc')->paginate(20);
+
+    // ✅ Map raw DB state → frontend status
+    $participants->getCollection()->transform(function ($participant) {
+        if ($participant->scanned_conference) {
+            $participant->status = 'conference_scanned';
+        } elseif ($participant->scanned_fair) {
+            $participant->status = 'fair_scanned';
+        }
+        // Otherwise keep original status (pending/accepted/rejected)
+        return $participant;
+    });
+
+    return response()->json([
+        'ok' => true,
+        'participants' => $participants,
+    ]);
+}
 
     /**
      * Accept a participant

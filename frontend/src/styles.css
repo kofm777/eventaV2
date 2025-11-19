@@ -181,9 +181,14 @@ body {
   color: #065f46;
 }
 
-.badge-rejected {
-  background-color: #fee2e2;
-  color: #991b1b;
+.badge-fair_scanned {
+  background-color: #fef3c7; /* yellow */
+  color: #92400e;
+}
+
+.badge-conference_scanned {
+  background-color: #dbeafe; /* light blue */
+  color: #1e40af;
 }
 
 .loading {

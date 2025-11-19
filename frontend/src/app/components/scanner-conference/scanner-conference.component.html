@@ -1,7 +1,8 @@
+<!-- src/app/components/scanner-conference/scanner-conference.component.html -->
 <div class="container">
     <div class="scanner-header">
         <h2>Scan Conference QR Code</h2>
-        <p class="subtitle">Scan for VIP/conference access</p>
+        <p class="subtitle">Scan for conference access (VIP / talk sessions)</p>
     </div>
 
     <div class="scanner-layout">
@@ -15,34 +16,26 @@
                             type="text"
                             class="form-control"
                             [(ngModel)]="scannerUser"
-                            placeholder="e.g. Main Entrance"
+                            placeholder="e.g. Conference Entrance"
                     />
                 </div>
 
-                <!-- ONLY ONE VIDEO CONTAINER -->
                 <div class="video-container">
-                    <video #video
-                           class="scanner-video"
-                           [class.hidden]="!selectedCamera"
-                           muted playsinline></video>
+                    <video #video class="scanner-video" [class.hidden]="!selectedCamera" muted playsinline></video>
 
                     <div *ngIf="!selectedCamera" class="video-placeholder">
                         <p>📷</p>
                         <p>Select a camera to begin scanning</p>
                     </div>
 
-                    <div *ngIf="error && error.includes('permissions')" class="video-overlay">
+                    <div *ngIf="error && error.toLowerCase().includes('permission')" class="video-overlay">
                         <p>🛑 Camera permission denied.<br>Please allow camera access and refresh.</p>
                     </div>
                 </div>
 
-                <!-- Camera selection (for desktop with multiple cams) -->
                 <div class="form-group" *ngIf="cameras.length > 1">
                     <label class="form-label">Select a camera</label>
-                    <select
-                            class="form-control"
-                            [(ngModel)]="selectedCamera"
-                            (ngModelChange)="onCameraSelected($event)">
+                    <select class="form-control" [(ngModel)]="selectedCamera" (ngModelChange)="onCameraSelected($event)">
                         <option value="">Choose a camera...</option>
                         <option *ngFor="let camera of cameras" [value]="camera.deviceId">
                             {{ camera.label || ('Camera ' + camera.deviceId.substring(0, 8)) }}
@@ -51,19 +44,10 @@
                 </div>
 
                 <div class="scanner-controls">
-                    <button
-                            *ngIf="!scanning"
-                            class="btn btn-primary btn-large"
-                            (click)="startScanning()"
-                            [disabled]="!selectedCamera"
-                    >
+                    <button *ngIf="!scanning" class="btn btn-primary btn-large" (click)="startScanning()" [disabled]="!selectedCamera">
                         Start Scanner
                     </button>
-                    <button
-                            *ngIf="scanning"
-                            class="btn btn-danger btn-large"
-                            (click)="stopScanning()"
-                    >
+                    <button *ngIf="scanning" class="btn btn-danger btn-large" (click)="stopScanning()">
                         Stop Scanner
                     </button>
                 </div>
@@ -86,22 +70,14 @@
 
                 <div class="form-group">
                     <label class="form-label">Or upload a QR image</label>
-                    <input
-                            type="file"
-                            class="form-control"
-                            accept="image/*"
-                            (change)="onFileSelected($event)"
-                    />
+                    <input type="file" class="form-control" accept="image/*" (change)="onFileSelected($event)" />
                 </div>
 
-                <button class="btn btn-primary" (click)="scanManualCode()">
-                    Check Code
-                </button>
+                <button class="btn btn-primary" (click)="scanManualCode()">Check Code</button>
             </div>
         </div>
 
         <div class="results-section">
-
             <div class="card">
                 <h3>Scan Result</h3>
                 <div *ngIf="!success && !error && !lastScanResult" class="empty-state">
@@ -126,6 +102,7 @@
                 </div>
             </div>
         </div>
+
         <div class="card">
             <h3>Instructions</h3>
             <ul class="instructions-list">
@@ -133,7 +110,6 @@
                 <li>Click "Start Scanner"</li>
                 <li>Present QR code to camera</li>
                 <li>Result appears automatically</li>
-                <li>Click "Read Welcome Message" to hear audio</li>
             </ul>
         </div>
     </div>

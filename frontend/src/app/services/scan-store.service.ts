@@ -7,14 +7,35 @@ import { ScanResult } from './scan-broadcast.service';
     providedIn: 'root'
 })
 export class ScanStoreService {
+    /**
+     * Holds the most recent scan result (for tabs opened after scan).
+     * This is a fallback — primary communication uses BroadcastChannel.
+     */
     private currentScan = new BehaviorSubject<ScanResult | null>(null);
+
+    /**
+     * Observable stream of the current scan result.
+     */
     currentScan$ = this.currentScan.asObservable();
 
-    setScan(scan: ScanResult) {
+    /**
+     * Store a scan result for late subscribers.
+     */
+    setScan(scan: ScanResult): void {
         this.currentScan.next(scan);
     }
 
-    clearScan() {
+    /**
+     * Clear the stored scan (e.g., after avatar consumes it).
+     */
+    clearScan(): void {
         this.currentScan.next(null);
+    }
+
+    /**
+     * Get the current stored scan (for immediate use on component init).
+     */
+    getCurrentScan(): ScanResult | null {
+        return this.currentScan.value;
     }
 }

@@ -157,7 +157,8 @@ export class AdminListComponent implements OnInit {
       case 'pending': return 'Pending';
       case 'accepted': return 'Accepted';
       case 'rejected': return 'Rejected';
-      case 'scanned': return 'Scanned';
+      case 'fair_scanned': return 'Fair Scanned';
+      case 'conference_scanned': return 'Conference Scanned';
       default: return status;
     }
   }
@@ -167,7 +168,8 @@ export class AdminListComponent implements OnInit {
       case 'pending': return 'badge-pending';
       case 'accepted': return 'badge-accepted';
       case 'rejected': return 'badge-rejected';
-      case 'scanned': return 'badge-scanned';
+      case 'fair_scanned': return 'badge-fair_scanned';
+      case 'conference_scanned': return 'badge-conference_scanned';
       default: return '';
     }
   }

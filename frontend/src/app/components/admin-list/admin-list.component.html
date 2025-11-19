@@ -18,13 +18,14 @@
       <div class="filters-grid">
         <div class="form-group">
           <label class="form-label">Status</label>
-          <select class="form-control" [(ngModel)]="statusFilter" (change)="applyFilters()">
-            <option value="">All</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="rejected">Rejected</option>
-            <option value="scanned">Scanned</option>
-          </select>
+            <select class="form-control" [(ngModel)]="statusFilter" (change)="applyFilters()">
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+                <option value="fair_scanned">Fair Scanned</option>
+                <option value="conference_scanned">Conference Scanned</option>
+            </select>
         </div>
 
         <div class="form-group">

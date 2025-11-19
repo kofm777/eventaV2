@@ -139,16 +139,20 @@ export class ScannerConferenceComponent implements OnInit, OnDestroy {
         this.error = !response.ok ? response.message : null;
 
         this.scanBroadcast.broadcastConference({
-            participant: response.participant || {},
-            is_already_scanned: response.is_already_scanned || false,
-            message: response.message || '',
+            participant: response.participant,
+            is_already_scanned: response.is_already_scanned,
+            message: response.message,
             scanType: 'conference'
         });
 
-        if (response.ok) this.playSuccessSound();
-        else this.playErrorSound();
-        setTimeout(() => this.error = null, 3000);
+        if (response.ok) {
+            this.playSuccessSound();
+        } else {
+            this.playErrorSound();
+            setTimeout(() => this.error = null, 3000);
+        }
     }
+
     scanManualCode() {
         if (!this.manualQrCode.trim()) {
             this.error = 'Please enter a QR code.';
@@ -195,14 +199,9 @@ export class ScannerConferenceComponent implements OnInit, OnDestroy {
 
     getAccessTypeLabel(accessType: string): string {
         switch (accessType) {
-            case 'fair':
-                return 'Fair only';
-            case 'conference':
-                return 'Conference only';
-            case 'fair + conference':
-                return 'Fair and Conference';
-            default:
-                return accessType;
+            case 'fair': return 'Fair only';
+            case 'fair + conference': return 'Fair and Conference';
+            default: return accessType;
         }
     }
 }

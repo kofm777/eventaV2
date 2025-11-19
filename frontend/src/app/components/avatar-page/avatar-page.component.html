@@ -1,8 +1,15 @@
-<!-- src/app/pages/avatar/avatar-page.component.html -->
 <div class="fullscreen-avatar">
     <div class="avatar-card">
         <div class="avatar-header">
-            <h3>GAICA AVATAR</h3>
+            <h3>FAIR AVATAR</h3>
+            <!-- At the top of the template -->
+            <div *ngIf="!isSystemStarted" class="start-overlay" (click)="startSystem()">
+                <div class="start-content">
+                    <h2>Event Access Avatar System</h2>
+                    <p>Click to start audio and video for automatic announcements.</p>
+                    <button class="btn-start">Start System</button>
+                </div>
+            </div>
         </div>
         <div *ngIf="error" class="alert alert-error">
             {{ error }}
@@ -36,7 +43,9 @@
             <p *ngIf="participantName" class="participant-name">
                 <strong>{{ participantName }}</strong>
             </p>
-            <p *ngIf="participantName" class="access-status" [class.accepted]="accessStatus === 'Accepted'" [class.denied]="accessStatus === 'Denied'">
+            <p *ngIf="participantName" class="access-status"
+               [class.accepted]="accessStatus === 'Accepted'"
+               [class.denied]="accessStatus === 'Denied'">
                 {{ accessStatus === 'Accepted' ? '✓ Access granted' : '✗ Access denied' }}
             </p>
             <p *ngIf="participantName" class="access-type">
@@ -48,8 +57,7 @@
         </div>
         <div class="avatar-footer">
             <p class="info-text">
-                <strong>Note:</strong> This component uses the browser's speech synthesis (Web Speech API).
-                For best experience, use Chrome or Edge with an internet connection.
+                <strong>Note:</strong> Female voice system active.
             </p>
         </div>
     </div>

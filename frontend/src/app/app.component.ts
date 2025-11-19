@@ -29,14 +29,14 @@ import { filter } from "rxjs/operators";
 
             <div class="nav-links" [class.show]="menuOpen">
               <!-- 🌐 Public navigation: shown only on public routes -->
-              <ng-container *ngIf="!isAuthenticated && isPublicRoute">
+              <ng-container *ngIf="!isAuthenticated || isPublicRoute">
                 <a routerLink="/home" class="nav-link" (click)="menuOpen=false">Home</a>
                 <a routerLink="/about" class="nav-link" (click)="menuOpen=false">About</a>
                 <a routerLink="/contact" class="nav-link" (click)="menuOpen=false">Contact</a>
                 <a routerLink="/register" class="nav-link register" (click)="menuOpen=false">Register</a>
               </ng-container>
 
-              <!-- 🔑 Admin Login link: shown only when NOT authenticated and NOT on login page -->
+              <!-- Admin Login link: only for guests, NOT on public routes, and NOT on /admin/login -->
               <a *ngIf="!isAuthenticated && !isPublicRoute && currentUrl !== '/admin/login'"
                  routerLink="/admin/login"
                  class="nav-link"
@@ -260,15 +260,11 @@ export class AppComponent implements OnInit {
   menuOpen = false;
   isScrolled = false;
 
-  // ✅ Add this getter
   get isPublicRoute(): boolean {
-    return [
-      '/',
-      '/home',
-      '/register',
-      '/about',
-      '/contact'
-    ].some(route => this.currentUrl === route || this.currentUrl.startsWith(route + '/'));
+    const publicPaths = ['/', '/home', '/about', '/contact', '/register','/badge'];
+    return publicPaths.some(path =>
+        this.currentUrl === path || this.currentUrl.startsWith(path + '/')
+    );
   }
 
   constructor(private authService: AuthService, private router: Router) {
@@ -281,7 +277,12 @@ export class AppComponent implements OnInit {
     this.router.events
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
         .subscribe((event: NavigationEnd) => {
-          this.currentUrl = event.url.split('?')[0]; // remove query params
+          this.currentUrl = event.url.split('?')[0];
+
+          // 🔒 Auto-redirect authenticated users away from public pages
+          if (this.isAuthenticated && this.isPublicRoute) {
+            this.router.navigate(['/admin/scanner']);
+          }
         });
 
     window.addEventListener('scroll', () => {

@@ -6,8 +6,10 @@ export interface Participant {
   gender: 'Male' | 'Female' | 'Other';
   phone?: string;
   email: string;
-  access_type: 'fair' | 'fair + conference' | 'both';
-  status: 'pending' | 'accepted' | 'rejected' | 'scanned';
+  access_type: 'fair' | 'fair + conference';
+  status: 'pending' | 'accepted' | 'rejected' | 'fair_scanned' | 'conference_scanned';
+  scanned_fair: boolean;
+  scanned_conference: boolean;
   qr_token?: string;
   qr_payload?: any;
   qr_image?: string;
