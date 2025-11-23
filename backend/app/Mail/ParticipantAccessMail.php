@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Models\Participant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -14,55 +13,38 @@ class ParticipantAccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public Participant $participant;
+    public ?string $qrImageBase64; // ← This is the base64 string
+    public string $emailType;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        public Participant $participant,
-        public ?string $qrImage = null,
-        public string $emailType = 'access'
-    ) {}
+    public function __construct(Participant $participant, string $qrImageBase64 = null, string $emailType = 'default')
+    {
+        $this->participant = $participant;
+        $this->qrImageBase64 = $qrImageBase64;
+        $this->emailType = $emailType;
+    }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
-        $subject = match ($this->emailType) {
-            'deleted' => 'Inscription annulée - Event Access',
-            default => match ($this->participant->status) {
-                'pending' => 'Demande d\'accès en attente - Event Access',
-                'accepted' => 'Accès confirmé - Bienvenue à Event Access',
-                'rejected' => 'Accès refusé - Event Access',
-                default => 'Event Access - Mise à jour de votre inscription',
-            },
-        };
-
         return new Envelope(
-            subject: $subject,
+            subject: match($this->emailType) {
+                'deleted' => 'Event Registration Cancelled',
+                'fair', 'conference' => 'Event Access Confirmed',
+                default => 'Event Access Confirmation'
+            }
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
             view: 'emails.participant_access',
-            with: [
-                'participant' => $this->participant,
-                'qrImage' => $this->qrImage,
-                'emailType' => $this->emailType,
-            ],
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];

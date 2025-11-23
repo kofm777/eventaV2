@@ -28,7 +28,7 @@ class PdfBadgeService
             // Create Dompdf instance
             $dompdf = new Dompdf();
             $dompdf->loadHtml($html);
-            $dompdf->setPaper('a6', 'landscape');
+            $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
 
             // Return PDF as base64 string

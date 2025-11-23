@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class RegistrationController extends Controller
 {
@@ -24,7 +25,7 @@ class RegistrationController extends Controller
     {
         try {
             $accessType = trim($request->access_type);
-            Log::info('Access type received for registration', ['access_type' => $accessType]);
+
             // Create participant
             $participant = Participant::create([
                 'first_name' => $request->first_name,
@@ -37,7 +38,7 @@ class RegistrationController extends Controller
                 'status' => 'accepted', // Always accepted
             ]);
 
-            // Generate QR code payload
+            // Generate QR payload
             $qrPayload = [
                 'id' => $participant->id,
                 'uuid' => Str::uuid()->toString(),
@@ -45,55 +46,52 @@ class RegistrationController extends Controller
                 'access' => $participant->access_type,
             ];
 
-            // Generate QR code with HMAC signature
-            $qrData = $this->qrCodeService->generateQrCode($qrPayload);
+        // Generate QR code as BASE64
+        $qrData = $this->qrCodeService->generateQrCode($qrPayload);
 
-            // Update participant with QR data
-            $participant->update([
-                'qr_token' => $qrData['token'],
-                'qr_payload' => $qrPayload,
-                'qr_image' => $qrData['qr_image'],
-            ]);
-// After generating QR
-\Log::info('QR Length: ' . strlen($qrData['qr_image'])); // Should be > 1000
-\Log::info('QR Sample: ' . substr($qrData['qr_image'], 0, 30));
+        // Save QR code as PNG file in public disk (for badge PDF / scanning)
+        $qrFileName = "qrcodes/participant_{$participant->id}.png";
+        Storage::disk('public')->put($qrFileName, base64_decode($qrData['qr_image']));
+        $qrUrl = Storage::disk('public')->url($qrFileName);
 
-            // Send email with QR code
-            try {
-                Mail::to($participant->email)->send(
-                    new ParticipantAccessMail($participant, $qrData['qr_image'])
-                );
-                $emailSent = true;
-            } catch (\Exception $e) {
-                Log::warning('Failed to send email to participant', [
-                    'participant_id' => $participant->id,
-                    'email' => $participant->email,
-                    'error' => $e->getMessage(),
-                ]);
-                $emailSent = false;
-            }
+        // Update participant record
+        $participant->update([
+            'qr_token' => $qrData['token'],
+            'qr_payload' => $qrPayload,
+            'qr_image' => $qrData['qr_image'], // Store public URL for scanning/badge
+        ]);
 
-            Log::info('Participant registered successfully', [
+        // Send email with PUBLIC URL
+        try {
+            Mail::to($participant->email)
+                ->send(new ParticipantAccessMail($participant, $qrUrl));
+            $emailSent = true;
+        } catch (\Exception $e) {
+            Log::warning('Failed to send email to participant', [
                 'participant_id' => $participant->id,
                 'email' => $participant->email,
+                'error' => $e->getMessage(),
             ]);
+            $emailSent = false;
+        }
 
-            return response()->json([
-                'ok' => true,
-                'participant' => $participant->only([
-                    'id', 'first_name', 'last_name','company_name', 'email', 'access_type', 'status'
-                ]),
-                'qr' => $qrData['qr_image'],
-                'email_sent' => $emailSent,
-                'message' => 'Registration successful. ' . ($emailSent ? 'An email with your QR code has been sent to you.' : 'Your QR code is ready to be downloaded.'),
-            ]);
+        // Return response with BOTH qr_url and qr_base64
+        return response()->json([
+            'ok' => true,
+           'participant' => $participant->only([
+                               'id', 'first_name', 'last_name','company_name', 'email', 'access_type', 'status'
+                           ]),
+                           'qr' => $qrData['qr_image'],
+                           'qr_url' => $qrUrl,
+            'email_sent' => $emailSent,
+            'message' => 'Registration successful. QR code sent via email.',
+        ]);
 
         } catch (\Exception $e) {
             Log::error('Registration failed', [
                 'error' => $e->getMessage(),
                 'email' => $request->email ?? 'unknown',
             ]);
-
             return response()->json([
                 'ok' => false,
                 'message' => 'An error occurred during registration.',

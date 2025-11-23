@@ -16,7 +16,10 @@ export class AdminListComponent implements OnInit {
   loading = false;
   error: string | null = null;
   success: string | null = null;
-
+  showModal = false;
+  modalMessage = '';
+  private pendingAction: (() => void) | null = null;
+  private currentParticipant: Participant | null = null;
   // Filters
   statusFilter = '';
   accessTypeFilter = '';
@@ -76,10 +79,14 @@ export class AdminListComponent implements OnInit {
   }
 
   acceptParticipant(participant: Participant): void {
-    if (!confirm(`Accept registration for ${participant.first_name} ${participant.last_name}?`)) {
-      return;
-    }
+    const accessLabel = this.getAccessTypeLabel(participant.access_type);
+    this.modalMessage = `Are you sure you want to <strong>accept</strong> participant <strong>${participant.first_name} ${participant.last_name}</strong> with <strong>${accessLabel}</strong> access?`;
+    this.currentParticipant = participant;
+    this.pendingAction = () => this.performAccept(participant);
+    this.showModal = true;
+  }
 
+  private performAccept(participant: Participant): void {
     this.apiService.acceptParticipant(participant.id).subscribe({
       next: (response) => {
         if (response.ok) {
@@ -96,10 +103,14 @@ export class AdminListComponent implements OnInit {
   }
 
   rejectParticipant(participant: Participant): void {
-    if (!confirm(`Reject registration for ${participant.first_name} ${participant.last_name}?`)) {
-      return;
-    }
+    const accessLabel = this.getAccessTypeLabel(participant.access_type);
+    this.modalMessage = `Are you sure you want to <strong>reject</strong> participant <strong>${participant.first_name} ${participant.last_name}</strong> with <strong>${accessLabel}</strong> access?`;
+    this.currentParticipant = participant;
+    this.pendingAction = () => this.performReject(participant);
+    this.showModal = true;
+  }
 
+  private performReject(participant: Participant): void {
     this.apiService.rejectParticipant(participant.id).subscribe({
       next: (response) => {
         if (response.ok) {
@@ -116,10 +127,14 @@ export class AdminListComponent implements OnInit {
   }
 
   deleteParticipant(participant: Participant): void {
-    if (!confirm(`Permanently delete ${participant.first_name} ${participant.last_name}? This action is irreversible.`)) {
-      return;
-    }
+    const accessLabel = this.getAccessTypeLabel(participant.access_type);
+    this.modalMessage = `Are you sure you want to <strong>permanently delete</strong> participant <strong>${participant.first_name} ${participant.last_name}</strong> with <strong>${accessLabel}</strong> access?`;
+    this.currentParticipant = participant;
+    this.pendingAction = () => this.performDelete(participant);
+    this.showModal = true;
+  }
 
+  private performDelete(participant: Participant): void {
     this.apiService.deleteParticipant(participant.id).subscribe({
       next: (response) => {
         if (response.ok) {
@@ -134,7 +149,19 @@ export class AdminListComponent implements OnInit {
       }
     });
   }
+  confirmAction(): void {
+    if (this.pendingAction) {
+      this.pendingAction();
+    }
+    this.closeModal();
+  }
 
+  closeModal(): void {
+    this.showModal = false;
+    this.modalMessage = '';
+    this.pendingAction = null;
+    this.currentParticipant = null;
+  }
   downloadBadge(participant: Participant): void {
     this.apiService.downloadBadge(participant.id).subscribe({
       next: (blob) => {

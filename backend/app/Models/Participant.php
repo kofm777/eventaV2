@@ -77,13 +77,72 @@ class Participant extends Model
     {
         return $this->status === 'rejected';
     }
-public function hasScannedFair(): bool
-{
-    return $this->scanned_fair;
-}
+    /**
+     * Scan checks (ensure boolean return).
+     */
+    public function hasScannedFair(): bool
+    {
+        return (bool) $this->scanned_fair;
+    }
 
-public function hasScannedConference(): bool
+    public function hasScannedConference(): bool
+    {
+        return (bool) $this->scanned_conference;
+    }
+public function getCurrentBadgeStatusColor(): string
 {
-    return $this->scanned_conference;
+    if ($this->isRejected()) {
+        return 'rejected';
+    }
+
+    if ($this->isPending()) {
+        return 'pending';
+    }
+
+    // Must be accepted at this point
+    $fair = $this->hasScannedFair();
+    $conf = $this->hasScannedConference();
+
+    if ($fair && $conf) {
+        return 'both-scanned'; // optional: treat as green or new color
+    }
+
+    if ($fair) {
+        return 'fair-scanned';
+    }
+
+    if ($conf) {
+        return 'conference-scanned';
+    }
+
+    return 'accepted'; // approved but not scanned
+}
+public function getBadgeStatusLabel(): string
+{
+    if ($this->isRejected()) {
+        return 'Rejected';
+    }
+
+    if ($this->isPending()) {
+        return 'Pending';
+    }
+
+    // Must be accepted
+    $fair = $this->hasScannedFair();
+    $conf = $this->hasScannedConference();
+
+    if ($fair && $conf) {
+        return 'Fair + Conference Scanned';
+    }
+
+    if ($fair) {
+        return 'Fair Scanned';
+    }
+
+    if ($conf) {
+        return 'Conference Scanned';
+    }
+
+    return 'Accepted';
 }
 }

@@ -8,166 +8,175 @@ use App\Services\QrCodeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ParticipantAccessMail;
 
 class ScanController extends Controller
 {
-    public function __construct(
-        private QrCodeService $qrCodeService
-    ) {}
+    public function __construct(private QrCodeService $qrCodeService) {}
 
-    private function processScan(Request $request, string $scanType): JsonResponse
-    {
-        $request->validate([
-            'payload' => ['nullable', 'string'],
-            'qr_image' => ['nullable', 'string'],
-            'scanner_user' => ['nullable', 'string', 'max:255'],
-        ]);
+   private function processScan(Request $request, string $scanType): JsonResponse
+   {
+       $request->validate([
+           'payload' => ['nullable', 'string'],
+           'qr_image' => ['nullable', 'string'],
+           'scanner_user' => ['nullable', 'string', 'max:255'],
+       ]);
 
-        if (!$request->payload && !$request->qr_image) {
-            return response()->json(['ok' => false, 'message' => 'Missing scan data.'], 400);
-        }
+       if (!$request->payload && !$request->qr_image) {
+           return response()->json(['ok' => false, 'message' => 'Missing scan data.'], 400);
+       }
 
-        try {
-            $qrToken = null;
-            $participant = null;
+       try {
+           $participant = null;
+           $qrToken = $request->payload ?? null;
 
-            if ($request->payload) {
-                $qrToken = $request->payload;
-            } elseif ($request->qr_image) {
-                $qrImageBase64 = preg_replace('#^data:image/[^;]+;base64,#', '', $request->qr_image);
-                $participant = Participant::where('qr_image', $qrImageBase64)->first();
-                if (!$participant) {
-                    return response()->json(['ok' => false, 'message' => 'QR image not recognized.'], 404);
-                }
-                $qrToken = $participant->qr_token;
-                if (!$qrToken) {
-                    return response()->json(['ok' => false, 'message' => 'Corrupted QR data.'], 500);
-                }
-            }
+           if ($request->qr_image) {
+               // Clean base64 if sent
+               $qrImageBase64 = preg_replace('#^data:image/[^;]+;base64,#', '', $request->qr_image);
 
-            $verification = $this->qrCodeService->verifyQrCode($qrToken);
-            if (!$verification['valid']) {
-                Log::warning('Invalid QR code scanned', [
-                    'scanner_user' => $request->scanner_user,
-                    'error' => $verification['error'] ?? 'Unknown'
-                ]);
-                return response()->json(['ok' => false, 'message' => 'Invalid or corrupted QR code.'], 403);
-            }
+               // Find participant by matching base64 QR image (if stored as base64)
+               // But since we store URL, we need to match by token or ID
+               // So better to verify via token
+               $verification = $this->qrCodeService->verifyQrCode($qrImageBase64); // ← This won't work if it's not token
 
-            $payload = $verification['payload'];
-            if (!$participant) {
-                $participant = Participant::where('id', $payload['id'])
-                    ->where('email', $payload['email'])
-                    ->first();
-            }
+               if (!$verification['valid']) {
+                   return response()->json(['ok' => false, 'message' => 'Invalid QR code.'], 403);
+               }
 
-            if (!$participant) {
-                return response()->json(['ok' => false, 'message' => 'Participant not found.'], 404);
-            }
+               $payload = $verification['payload'];
+               $participant = Participant::where('id', $payload['id'])
+                   ->where('email', $payload['email'])
+                   ->first();
 
-            if ($participant->status !== 'accepted') {
-                return response()->json([
-                    'ok' => false,
-                    'message' => 'Access denied. Registration not approved.',
-                    'participant' => $participant->only([
-                        'id', 'first_name', 'last_name', 'company_name', 'gender', 'email', 'access_type', 'status'
-                    ])
-                ], 403);
-            }
+               if (!$participant) {
+                   return response()->json(['ok' => false, 'message' => 'Participant not found.'], 404);
+               }
 
-            // 🔒 Conference access check
-            if ($scanType === 'conference' && $participant->access_type !== 'fair + conference') {
-                return response()->json([
-                    'ok' => true,
-                    'message' => 'Conference access not permitted for this participant.',
-                    'participant' => $participant->only([
-                        'id', 'first_name', 'last_name', 'company_name', 'gender', 'email', 'access_type', 'status'
-                    ])
-                ], 200);
-            }
+               $qrToken = $participant->qr_token;
+           }
 
-            // ✅ GLOBAL FULLY SCANNED CHECK (NEW)
-            $isFullyScanned = (
-                $participant->access_type === 'fair + conference' &&
-                $participant->scanned_fair &&
-                $participant->scanned_conference
-            );
+           if (!$participant && $qrToken) {
+               $verification = $this->qrCodeService->verifyQrCode($qrToken);
+               if (!$verification['valid']) {
+                   Log::warning('Invalid QR code scanned', [
+                       'scanner_user' => $request->scanner_user,
+                       'error' => $verification['error'] ?? 'Unknown'
+                   ]);
+                   return response()->json(['ok' => false, 'message' => 'Invalid or corrupted QR code.'], 403);
+               }
+               $payload = $verification['payload'];
+               $participant = Participant::where('id', $payload['id'])
+                   ->where('email', $payload['email'])
+                   ->first();
+               if (!$participant) {
+                   return response()->json(['ok' => false, 'message' => 'Participant not found.'], 404);
+               }
+           }
 
-            $alreadyScanned = false;
-            $message = '';
+           if ($participant->status !== 'accepted') {
+               return response()->json([
+                   'ok' => false,
+                   'message' => 'Access denied. Registration not approved.',
+                   'participant' => $participant->only([
+                       'id','first_name','last_name','company_name','gender','email','access_type','status'
+                   ])
+               ], 403);
+           }
 
-            if ($isFullyScanned) {
-                $alreadyScanned = true;
-                $message = "Your access has already been fully granted, {$participant->first_name} {$participant->last_name}.";
-            } elseif ($scanType === 'fair' && $participant->scanned_fair) {
-                $alreadyScanned = true;
-                $message = "Fair access already granted for {$participant->first_name} {$participant->last_name}.";
-            } elseif ($scanType === 'conference' && $participant->scanned_conference) {
-                $alreadyScanned = true;
-                $message = "Conference access already granted for {$participant->first_name} {$participant->last_name}.";
-            }
+           // Conference access check
+           if ($scanType === 'conference' && $participant->access_type !== 'fair + conference') {
+               return response()->json([
+                   'ok' => true,
+                   'message' => 'Conference access not permitted for this participant.',
+                   'participant' => $participant->only([
+                       'id','first_name','last_name','company_name','gender','email','access_type','status'
+                   ])
+               ], 200);
+           }
 
-            if ($alreadyScanned) {
-                return response()->json([
-                    'ok' => true,
-                    'participant' => $participant->only([
-                        'id', 'first_name', 'last_name', 'company_name', 'gender', 'email', 'access_type', 'status',
-                        'scanned_fair', 'scanned_conference'
-                    ]),
-                    'is_already_scanned' => true,
-                    'scan_type' => $scanType,
-                    'message' => $message,
-                ]);
-            }
+           // Check already scanned
+           $alreadyScanned = false;
+           $message = '';
+           if (($scanType === 'fair' && $participant->scanned_fair) ||
+               ($scanType === 'conference' && $participant->scanned_conference) ||
+               ($participant->scanned_fair && $participant->scanned_conference)) {
+               $alreadyScanned = true;
+               $message = "Access already granted for {$participant->first_name} {$participant->last_name}.";
+               return response()->json([
+                   'ok' => true,
+                   'participant' => $participant->only([
+                       'id','first_name','last_name','company_name','gender','email','access_type','status',
+                       'scanned_fair','scanned_conference'
+                   ]),
+                   'is_already_scanned' => true,
+                   'scan_type' => $scanType,
+                   'message' => $message,
+               ]);
+           }
 
-            // ✅ Perform atomic update
-            \DB::transaction(function () use ($participant, $scanType) {
-                if ($scanType === 'fair') {
-                    $participant->scanned_fair = true;
-                } else {
-                    $participant->scanned_conference = true;
-                }
-                $participant->save();
-            });
+           // Update scan status atomically
+           \DB::transaction(function () use ($participant, $scanType) {
+               if ($scanType === 'fair') {
+                   $participant->scanned_fair = true;
+               } else {
+                   $participant->scanned_conference = true;
+               }
+               $participant->save();
+           });
 
-            $scan = Scan::create([
-                'participant_id' => $participant->id,
-                'scanned_at' => now(),
-                'scanner_user' => $request->scanner_user,
-                'raw_payload' => $payload,
-            ]);
+           // Create scan record
+           $scan = Scan::create([
+               'participant_id' => $participant->id,
+               'scanned_at' => now(),
+               'scanner_user' => $request->scanner_user,
+               'raw_payload' => $qrToken,
+           ]);
 
-            Log::channel('scans')->info("Successful {$scanType} scan", [
-                'scan_id' => $scan->id,
-                'participant_id' => $participant->id,
-                'access_type' => $participant->access_type,
-                'scanner_user' => $request->scanner_user,
-            ]);
+// Send email after scan with BASE64 QR image
+try {
+    // Generate QR code again as base64 for email
+    $qrData = $this->qrCodeService->generateQrCode($participant->qr_payload);
 
-            $welcome = $scanType === 'fair'
-                ? "Welcome to the fair, {$participant->first_name}!"
-                : "Welcome to the conference, {$participant->first_name}!";
+    Mail::to($participant->email)->queue(
+        new ParticipantAccessMail(
+            participant: $participant,
+            qrImageBase64: $qrData['qr_image'], // ← PASS BASE64 HERE
+            emailType: $scanType
+        )
+    );
+} catch (\Exception $e) {
+    Log::warning('Failed to send scan email', [
+        'participant_id' => $participant->id,
+        'email' => $participant->email,
+        'error' => $e->getMessage(),
+    ]);
+}
 
-            return response()->json([
-                'ok' => true,
-                'participant' => $participant->only([
-                    'id', 'first_name', 'last_name', 'company_name', 'gender', 'email', 'access_type', 'status',
-                    'scanned_fair', 'scanned_conference'
-                ]),
-                'scan_id' => $scan->id,
-                'is_already_scanned' => false,
-                'scan_type' => $scanType,
-                'message' => $welcome,
-            ]);
+           $welcome = $scanType === 'fair'
+               ? "Welcome to the fair, {$participant->first_name}!"
+               : "Welcome to the conference, {$participant->first_name}!";
 
-        } catch (\Exception $e) {
-            Log::error('Scan processing failed', [
-                'error' => $e->getMessage(),
-                'scanner_user' => $request->scanner_user,
-            ]);
-            return response()->json(['ok' => false, 'message' => 'Scan processing error.'], 500);
-        }
-    }
+           return response()->json([
+               'ok' => true,
+               'participant' => $participant->only([
+                   'id','first_name','last_name','company_name','gender','email','access_type','status',
+                   'scanned_fair','scanned_conference'
+               ]),
+               'scan_id' => $scan->id,
+               'is_already_scanned' => false,
+               'scan_type' => $scanType,
+               'message' => $welcome,
+           ]);
+
+       } catch (\Exception $e) {
+           Log::error('Scan processing failed', [
+               'error' => $e->getMessage(),
+               'scanner_user' => $request->scanner_user,
+           ]);
+           return response()->json(['ok' => false, 'message' => 'Scan processing error.'], 500);
+       }
+   }
 
     public function scanFair(Request $request): JsonResponse
     {

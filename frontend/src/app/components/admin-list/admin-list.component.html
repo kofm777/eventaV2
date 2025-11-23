@@ -86,7 +86,8 @@
             <th>Status</th>
             <th>QR Token</th>
             <th>QR Image</th>
-            <th>Date</th>
+            <th>Created At</th>
+              <th>Updated At</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -126,6 +127,7 @@
               </ng-template>
             </td>
             <td>{{ participant.created_at | date:'short' }}</td>
+              <td>{{ participant.updated_at | date:'short' }}</td>
             <td>
               <div class="action-buttons">
                 <button
@@ -137,7 +139,7 @@
                   ✓
                 </button>
                 <button
-                  *ngIf="participant.status === 'pending'"
+                  *ngIf="participant.status === 'accepted'"
                   class="btn btn-danger btn-sm"
                   (click)="rejectParticipant(participant)"
                   title="Reject"
@@ -185,4 +187,21 @@
       </button>
     </div>
   </div>
+    <!-- Confirmation Modal -->
+    <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+                <button class="close-btn" (click)="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p [innerHTML]="modalMessage"></p>
+                <p><strong>This action is irreversible.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+                <button class="btn btn-danger" (click)="confirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
 </div>

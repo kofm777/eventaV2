@@ -74,7 +74,6 @@ export class RegisterComponent {
     this.submitted = true;
     if (this.registerForm.invalid) return;
 
-    // Determine access type
     const accessType = this.conferenceAccess.value ? 'fair + conference' : 'fair';
     const payload = { ...this.registerForm.value, access_type: accessType };
 
@@ -88,7 +87,7 @@ export class RegisterComponent {
           this.ngZone.run(async () => {
             await this.router.navigate(['/badge'], {
               state: {
-                qrCode: response.qr,
+                qrCode: response.qr, // ← This is now base64!
                 participantGender: response.participant.gender,
                 participantName: `${response.participant.first_name} ${response.participant.last_name}`,
                 accessType: accessType,

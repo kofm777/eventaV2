@@ -178,10 +178,13 @@ public function getParticipants(Request $request): JsonResponse
         try {
             $participant = Participant::findOrFail($id);
 
-            // Send deletion notification email
+            // Store QR URL before deleting
+            $qrUrl = $participant->qr_image;
+
+            // Send deletion notification email BEFORE deleting the participant
             try {
                 Mail::to($participant->email)->send(
-                    new ParticipantAccessMail($participant, null, 'deleted')
+                    new ParticipantAccessMail($participant, $qrUrl, 'deleted')
                 );
             } catch (\Exception $e) {
                 Log::warning('Failed to send deletion email to participant', [
@@ -191,6 +194,7 @@ public function getParticipants(Request $request): JsonResponse
                 ]);
             }
 
+            // Delete participant record
             $participant->delete();
 
             Log::info('Participant deleted', [
@@ -200,7 +204,7 @@ public function getParticipants(Request $request): JsonResponse
 
             return response()->json([
                 'ok' => true,
-                'message' => 'Participant supprimé avec succès.',
+                'message' => 'Participant deleted successfully.',
             ]);
 
         } catch (\Exception $e) {

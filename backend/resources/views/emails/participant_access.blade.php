@@ -49,7 +49,6 @@
         .status-pending { background-color: #fef3c7; color: #b45309; }
         .status-accepted { background-color: #d1fae5; color: #065f46; }
         .status-rejected { background-color: #fee2e2; color: #b91c1c; }
-
         .qr-container {
             text-align: center;
             margin: 25px 0;
@@ -71,14 +70,12 @@
         }
         .participant-info ul { list-style: none; padding: 0; margin: 0; }
         .participant-info li { margin-bottom: 8px; }
-
         .footer {
             text-align: center;
             font-size: 12px;
             color: #6b7280;
             padding: 15px;
         }
-
         @media screen and (max-width: 640px) {
             .container { margin: 10px; }
             .header h1 { font-size: 20px; }
@@ -91,7 +88,6 @@
             <h1>Event Access</h1>
             <p>Event access management system</p>
         </div>
-
         <div class="content">
             <h2>Hello {{ $participant->first_name }} {{ $participant->last_name }},</h2>
 
@@ -106,13 +102,14 @@
                 <div class="status status-accepted">Access confirmed — Welcome!</div>
                 <p>Congratulations! Your registration has been accepted.</p>
 
-                @if($qrImage)
-                    <div class="qr-container">
-                        <h3>Your Access QR Code</h3>
-                        <img src="data:image/png;base64,{{ $qrImage }}" alt="Access QR Code">
-                        <p><small>Show this QR code at the event entrance</small></p>
-                    </div>
-                @endif
+             @if($qrImageBase64)
+                 <div class="qr-container">
+                     <h3>Your Access QR Code</h3>
+                     <img src="data:image/png;base64,{{ $qrImageBase64 }}" alt="Access QR Code" style="max-width:200px; height:auto;">
+                     <p><small>Show this QR code at the event entrance</small></p>
+                 </div>
+             @endif
+
             @elseif($participant->status === 'rejected')
                 <div class="status status-rejected">Access denied</div>
                 <p>We regret to inform you that your registration could not be accepted.</p>
@@ -138,7 +135,6 @@
                 </ul>
             </div>
         </div>
-
         <div class="footer">
             <p>Event Access — Event management system</p>
             <p>This email was sent automatically, please do not reply.</p>
