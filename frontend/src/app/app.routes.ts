@@ -10,6 +10,7 @@ export const routes: Routes = [
 
   // Admin
   { path: 'admin/login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
+  { path: 'admin/dashboard', canActivate: [authGuard], loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'admin/participants', canActivate: [authGuard], loadComponent: () => import('./components/admin-list/admin-list.component').then(m => m.AdminListComponent) },
 
   // ✅ Fair scanner (existing)

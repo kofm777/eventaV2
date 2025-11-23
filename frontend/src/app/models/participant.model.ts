@@ -15,6 +15,8 @@ export interface Participant {
   qr_image?: string;
   created_at?: string;
   updated_at?: string;
+  scans_count?: number;
+  scans_max_created_at?: string;
 }
 
 export interface RegisterParticipantRequest {

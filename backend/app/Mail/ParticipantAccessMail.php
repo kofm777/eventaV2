@@ -5,17 +5,15 @@ namespace App\Mail;
 use App\Models\Participant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class ParticipantAccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Participant $participant;
-    public ?string $qrImageBase64; // ← This is the base64 string
-    public string $emailType;
+    public $participant;
+    public $qrImageBase64;
+    public $emailType;
 
     /**
      * Create a new message instance.
@@ -27,26 +25,28 @@ class ParticipantAccessMail extends Mailable
         $this->emailType = $emailType;
     }
 
-    public function envelope(): Envelope
+    /**
+     * Build the message.
+     */
+    public function build()
     {
-        return new Envelope(
-            subject: match($this->emailType) {
+        $email = $this->subject(
+            match ($this->emailType) {
                 'deleted' => 'Event Registration Cancelled',
                 'fair', 'conference' => 'Event Access Confirmed',
                 default => 'Event Access Confirmation'
             }
-        );
-    }
+        )
+        ->view('emails.participant_access')
+        ->with([
+            'participant' => $this->participant,
+            'qrImageBase64' => $this->qrImageBase64,
+            'emailType' => $this->emailType,
+        ]);
 
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.participant_access',
-        );
-    }
+        // QR code attachment is now handled directly in the view using $message->embedData()
+        // to ensure proper inline display across all email clients.
 
-    public function attachments(): array
-    {
-        return [];
+        return $email;
     }
 }

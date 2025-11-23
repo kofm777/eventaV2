@@ -46,6 +46,7 @@ import { filter } from "rxjs/operators";
 
               <!-- 🔒 Authenticated Admin Navigation -->
               <ng-container *ngIf="isAuthenticated">
+                <a routerLink="/admin/dashboard" class="nav-link" (click)="menuOpen=false">Dashboard</a>
                 <a routerLink="/admin/participants" class="nav-link" (click)="menuOpen=false">Participants</a>
                 <a routerLink="/admin/scanner" class="nav-link" (click)="menuOpen=false">Scanner (Fair)</a>
                 <a routerLink="/admin/scanner/conference" class="nav-link" (click)="menuOpen=false">Scanner (Conference)</a>

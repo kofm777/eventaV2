@@ -102,13 +102,13 @@
                 <div class="status status-accepted">Access confirmed — Welcome!</div>
                 <p>Congratulations! Your registration has been accepted.</p>
 
-             @if($qrImageBase64)
-                 <div class="qr-container">
-                     <h3>Your Access QR Code</h3>
-                     <img src="data:image/png;base64,{{ $qrImageBase64 }}" alt="Access QR Code" style="max-width:200px; height:auto;">
-                     <p><small>Show this QR code at the event entrance</small></p>
-                 </div>
-             @endif
+        @if($qrImageBase64)
+            <div class="qr-container">
+                <h3>Your Access QR Code</h3>
+                <img src="{{ $message->embedData(base64_decode($qrImageBase64), 'qr-code.png') }}" alt="Access QR Code" style="max-width:200px; height:auto;">
+                <p><small>Show this QR code at the event entrance</small></p>
+            </div>
+        @endif
 
             @elseif($participant->status === 'rejected')
                 <div class="status status-rejected">Access denied</div>

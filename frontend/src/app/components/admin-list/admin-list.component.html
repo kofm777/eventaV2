@@ -18,14 +18,14 @@
       <div class="filters-grid">
         <div class="form-group">
           <label class="form-label">Status</label>
-            <select class="form-control" [(ngModel)]="statusFilter" (change)="applyFilters()">
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-                <option value="fair_scanned">Fair Scanned</option>
-                <option value="conference_scanned">Conference Scanned</option>
-            </select>
+          <select class="form-control" [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+            <option value="fair_scanned">Fair Scanned</option>
+            <option value="conference_scanned">Conference Scanned</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -39,13 +39,8 @@
 
         <div class="form-group">
           <label class="form-label">Search</label>
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="applyFilters()"
-            placeholder="Name, email..."
-          />
+          <input type="text" class="form-control" [(ngModel)]="searchQuery" (keyup.enter)="applyFilters()"
+            placeholder="Name, email..." />
         </div>
 
         <div class="form-group filter-actions">
@@ -84,10 +79,10 @@
             <th>Phone</th>
             <th>Access Type</th>
             <th>Status</th>
+            <th>Scanned Count</th>
+            <th>Last Scan Time</th>
             <th>QR Token</th>
             <th>QR Image</th>
-            <th>Created At</th>
-              <th>Updated At</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -97,10 +92,10 @@
               <strong>{{ participant.first_name }} {{ participant.last_name }}</strong>
             </td>
             <td>{{ participant.email }}</td>
-             <td>
+            <td>
               <strong>{{ participant.company_name }}</strong>
             </td>
-            
+
             <td>{{ participant.gender }}</td>
             <td>{{ participant.phone || '-' }}</td>
             <td>{{ getAccessTypeLabel(participant.access_type) }}</td>
@@ -109,8 +104,11 @@
                 {{ getStatusLabel(participant.status) }}
               </span>
             </td>
+            <td>{{ participant.scans_count || 0 }}</td>
+            <td>{{ (participant.scans_max_created_at | date:'yyyy-MM-dd HH:mm') || '-' }}</td>
             <td>
-              <span *ngIf="participant.qr_token" class="qr-token" title="{{ participant.qr_token }}" (click)="copyToClipboard(participant.qr_token)">
+              <span *ngIf="participant.qr_token" class="qr-token" title="{{ participant.qr_token }}"
+                (click)="copyToClipboard(participant.qr_token)">
                 {{ participant.qr_token.substring(0, 20) }}...
               </span>
               <span *ngIf="!participant.qr_token">-</span>
@@ -126,38 +124,20 @@
                 <span>-</span>
               </ng-template>
             </td>
-            <td>{{ participant.created_at | date:'short' }}</td>
-              <td>{{ participant.updated_at | date:'short' }}</td>
             <td>
               <div class="action-buttons">
-                <button
-                  *ngIf="participant.status === 'pending'"
-                  class="btn btn-success btn-sm"
-                  (click)="acceptParticipant(participant)"
-                  title="Accept"
-                >
+                <button *ngIf="participant.status === 'pending'" class="btn btn-success btn-sm"
+                  (click)="acceptParticipant(participant)" title="Accept">
                   ✓
                 </button>
-                <button
-                  *ngIf="participant.status === 'accepted'"
-                  class="btn btn-danger btn-sm"
-                  (click)="rejectParticipant(participant)"
-                  title="Reject"
-                >
+                <button *ngIf="participant.status === 'accepted'" class="btn btn-danger btn-sm"
+                  (click)="rejectParticipant(participant)" title="Reject">
                   ✗
                 </button>
-                <button
-                  class="btn btn-primary btn-sm"
-                  (click)="downloadBadge(participant)"
-                  title="Download badge PDF"
-                >
+                <button class="btn btn-primary btn-sm" (click)="downloadBadge(participant)" title="Download badge PDF">
                   📄
                 </button>
-                <button
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="deleteParticipant(participant)"
-                  title="Delete"
-                >
+                <button class="btn btn-outline-danger btn-sm" (click)="deleteParticipant(participant)" title="Delete">
                   🗑️
                 </button>
               </div>
@@ -168,40 +148,32 @@
     </div>
 
     <div *ngIf="!loading && lastPage > 1" class="pagination">
-      <button
-        class="btn btn-secondary"
-        (click)="previousPage()"
-        [disabled]="currentPage === 1"
-      >
+      <button class="btn btn-secondary" (click)="previousPage()" [disabled]="currentPage === 1">
         Previous
       </button>
       <span class="pagination-info">
         Page {{ currentPage }} of {{ lastPage }}
       </span>
-      <button
-        class="btn btn-secondary"
-        (click)="nextPage()"
-        [disabled]="currentPage === lastPage"
-      >
+      <button class="btn btn-secondary" (click)="nextPage()" [disabled]="currentPage === lastPage">
         Next
       </button>
     </div>
   </div>
-    <!-- Confirmation Modal -->
-    <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Confirm Action</h3>
-                <button class="close-btn" (click)="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p [innerHTML]="modalMessage"></p>
-                <p><strong>This action is irreversible.</strong></p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-                <button class="btn btn-danger" (click)="confirmAction()">Confirm</button>
-            </div>
-        </div>
+  <!-- Confirmation Modal -->
+  <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Confirm Action</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p [innerHTML]="modalMessage"></p>
+        <p><strong>This action is irreversible.</strong></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="confirmAction()">Confirm</button>
+      </div>
     </div>
+  </div>
 </div>

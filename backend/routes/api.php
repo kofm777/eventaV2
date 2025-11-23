@@ -35,6 +35,7 @@ Route::prefix('v1')->group(function () {
     // Admin routes
     Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/participants', [AdminController::class, 'getParticipants']);
+        Route::get('/dashboard', [AdminController::class, 'getDashboardStats']);
         Route::post('/participants/{id}/accept', [AdminController::class, 'acceptParticipant']);
         Route::post('/participants/{id}/reject', [AdminController::class, 'rejectParticipant']);
         Route::delete('/participants/{id}', [AdminController::class, 'deleteParticipant']);

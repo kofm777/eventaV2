@@ -21,18 +21,18 @@ import {
 export class ApiService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('admin_token');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-    
+
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    
+
     return headers;
   }
 
@@ -41,15 +41,15 @@ export class ApiService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
   }
 
-scan(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
-  return this.http.post<ScanResponse>(`${this.apiUrl}/scan`, data);
-}
+  scan(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
+    return this.http.post<ScanResponse>(`${this.apiUrl}/scan`, data);
+  }
 
   // Auth endpoints
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/admin/login`, credentials);
   }
-// Add these methods
+  // Add these methods
   scanFair(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
     return this.http.post<ScanResponse>(`${this.apiUrl}/scan-fair`, data, {
       withCredentials: true
@@ -81,7 +81,7 @@ scan(data: { payload?: string; qr_image?: string; scanner_user?: string }): Obse
     page?: number;
   }): Observable<ParticipantsResponse> {
     let params = new HttpParams();
-    
+
     if (filters) {
       if (filters.status) params = params.set('status', filters.status);
       if (filters.access_type) params = params.set('access_type', filters.access_type);
@@ -122,6 +122,12 @@ scan(data: { payload?: string; qr_image?: string; scanner_user?: string }): Obse
 
   getRecentScans(): Observable<any> {
     return this.http.get(`${this.apiUrl}/admin/scans`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/admin/dashboard`, {
       headers: this.getHeaders()
     });
   }

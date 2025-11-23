@@ -63,8 +63,8 @@ class RegistrationController extends Controller
 
         // Send email with PUBLIC URL
         try {
-            Mail::to($participant->email)
-                ->send(new ParticipantAccessMail($participant, $qrUrl));
+          Mail::to($participant->email)
+              ->send(new ParticipantAccessMail($participant, $qrData['qr_image']));
             $emailSent = true;
         } catch (\Exception $e) {
             Log::warning('Failed to send email to participant', [
