@@ -19,7 +19,7 @@ import { filter } from "rxjs/operators";
       <header class="app-header" [class.scrolled]="isScrolled">
         <div class="container header-content">
           <h1 class="logo">
-            <a routerLink="/home">🎟️ Event<span>Access</span></a>
+            <a routerLink="/home">🎟️ Event<span>A</span></a>
           </h1>
 
           <nav class="nav" [class.open]="menuOpen">
