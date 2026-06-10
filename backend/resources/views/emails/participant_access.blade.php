@@ -70,6 +70,17 @@
         }
         .participant-info ul { list-style: none; padding: 0; margin: 0; }
         .participant-info li { margin-bottom: 8px; }
+        .ticket-action { text-align: center; margin: 25px 0; }
+        .ticket-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
+        }
         .footer {
             text-align: center;
             font-size: 12px;
@@ -107,6 +118,14 @@
                 <h3>Your Access QR Code</h3>
                 <img src="{{ $message->embedData(base64_decode($qrImageBase64), 'qr-code.png') }}" alt="Access QR Code" style="max-width:200px; height:auto;">
                 <p><small>Show this QR code at the event entrance</small></p>
+            </div>
+        @endif
+
+        {{-- Guest ticket purchase: no-login download link. Only rendered when $ticketUrl is passed. --}}
+        @if(!empty($ticketUrl))
+            <div class="ticket-action">
+                <a href="{{ $ticketUrl }}" class="ticket-button">Download your ticket</a>
+                <p><small>Access your ticket anytime with this secure link.</small></p>
             </div>
         @endif
 

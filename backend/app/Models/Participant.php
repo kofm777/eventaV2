@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Participant extends Model
@@ -16,6 +17,7 @@ class Participant extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'event_id',
         'first_name',
         'last_name',
         'company_name',
@@ -44,6 +46,14 @@ class Participant extends Model
     public function scans(): HasMany
     {
         return $this->hasMany(Scan::class);
+    }
+
+    /**
+     * Get the event this participant belongs to (nullable for legacy participants).
+     */
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 
     /**
