@@ -34,8 +34,9 @@ RUN chown -R www-data:www-data /var/www/html \
 # Install dependencies as root
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Generate application key as root
-RUN php artisan key:generate --no-interaction
+# APP_KEY is provided at runtime via the environment (Railway vars); .env is NOT shipped.
+# Keep this non-fatal so the build never depends on a committed .env file.
+RUN php artisan key:generate --no-interaction || true
 
 # Ensure storage/logs folder is writable at runtime
 RUN chmod -R 777 /var/www/html/storage/logs
