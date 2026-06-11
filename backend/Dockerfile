@@ -44,6 +44,8 @@ RUN chmod -R 777 /var/www/html/storage/logs
 # Switch to www-data for security
 USER www-data
 
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# On every deploy: run pending migrations + idempotent seeders, then serve on Railway's $PORT.
+# Migrations/seeders are idempotent, so this is safe to re-run on each container start.
+CMD ["sh", "-c", "php artisan migrate --force --seed && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]

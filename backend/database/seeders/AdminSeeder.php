@@ -13,10 +13,14 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        Admin::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('admin123'),
-        ]);
+        // Idempotent: safe to run on every deploy (migrate --seed runs at container start).
+        // Does not reset the password if the admin already exists, so a changed password sticks.
+        Admin::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('admin123'),
+            ]
+        );
     }
 }
