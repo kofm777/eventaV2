@@ -7,6 +7,7 @@ use App\Mail\ParticipantAccessMail;
 use App\Models\Event;
 use App\Models\Organizer;
 use App\Models\Participant;
+use App\Services\OrderService;
 use App\Services\QrCodeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +18,8 @@ use Illuminate\Support\Facades\Storage;
 class RegistrationController extends Controller
 {
     public function __construct(
-        private QrCodeService $qrCodeService
+        private QrCodeService $qrCodeService,
+        private OrderService $orderService
     ) {}
 
     /**
@@ -70,6 +72,32 @@ class RegistrationController extends Controller
             'qr_payload' => $qrPayload,
             'qr_image' => $qrData['qr_image'], // Store public URL for scanning/badge
         ]);
+
+        // Phase 2: ALSO issue a free ticket row via the event's default free tier (under
+        // the inventory/capacity lock). The participant + its v1 QR above are untouched,
+        // so the response shape below stays byte-for-byte identical. A no-event (Demo)
+        // registration issues a legacy bridge ticket (event_id NULL) and never 500s.
+        $event = !empty($request->input('event_id')) ? Event::find($request->input('event_id')) : null;
+
+        try {
+            $this->orderService->issueFreeTicket($event, $participant, $accessType);
+        } catch (\App\Exceptions\InventoryExceededException | \App\Exceptions\CapacityExceededException $e) {
+            // Roll back the just-created participant so a sold-out/at-capacity event does
+            // not leave an orphan accepted participant with no seat.
+            $participant->delete();
+
+            return response()->json([
+                'ok' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Never break the live free-registration path on a ticket-issuance hiccup:
+            // the participant + QR + email still go out exactly as before.
+            Log::warning('Free ticket issuance failed; participant kept', [
+                'participant_id' => $participant->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // Send email with PUBLIC URL
         try {

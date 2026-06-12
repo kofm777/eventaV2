@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToOrganizer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
@@ -75,11 +76,28 @@ class Order extends Model
     }
 
     /**
-     * Get the participant (ticket) issued for this order, if any.
+     * Get the participant (ticket) issued for this order, if any. KEPT for backward
+     * read: for quantity==1 it still points at the first issued ticket's participant.
      */
     public function participant(): BelongsTo
     {
         return $this->belongsTo(Participant::class);
+    }
+
+    /**
+     * Get the order items (tier x qty x unit_price lines) for this order.
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the issued tickets (one per seat) for this order.
+     */
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
     }
 
     /**

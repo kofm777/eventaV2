@@ -19,6 +19,7 @@ class Scan extends Model
     protected $fillable = [
         'organizer_id',
         'participant_id',
+        'ticket_id',
         'scanned_at',
         'scanner_user',
         'raw_payload',
@@ -41,5 +42,13 @@ class Scan extends Model
     public function participant(): BelongsTo
     {
         return $this->belongsTo(Participant::class);
+    }
+
+    /**
+     * Get the ticket (seat) this scan checked in (NULL for legacy participant scans).
+     */
+    public function ticket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class);
     }
 }

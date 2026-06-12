@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrganizerController as AdminOrganizerController;
+use App\Http\Controllers\Admin\TicketTypeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
@@ -122,5 +123,13 @@ Route::prefix('v1')->group(function () {
             Route::get('/events/{id}', [EventController::class, 'show']);
             Route::put('/events/{id}', [EventController::class, 'update']);
             Route::delete('/events/{id}', [EventController::class, 'destroy']);
+
+            // Ticket types (Phase 2): nested under an event, auto-scoped by the Phase 0
+            // global scope. Purchase/confirm/webhook stay commented (Phase 3); scan
+            // routes unchanged.
+            Route::get('/events/{event}/ticket-types', [TicketTypeController::class, 'index']);
+            Route::post('/events/{event}/ticket-types', [TicketTypeController::class, 'store']);
+            Route::put('/events/{event}/ticket-types/{id}', [TicketTypeController::class, 'update']);
+            Route::delete('/events/{event}/ticket-types/{id}', [TicketTypeController::class, 'destroy']);
         });
 });

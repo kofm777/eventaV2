@@ -13,6 +13,8 @@ class PublicEventController extends Controller
     public function index(): JsonResponse
     {
         $events = Event::published()
+            // Eager-load active tiers so toPublicArray() exposes them read-only without N+1.
+            ->with(['ticketTypes' => fn ($q) => $q->where('is_active', true)])
             ->orderBy('starts_at', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -31,7 +33,10 @@ class PublicEventController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $event = Event::published()->where('slug', $slug)->first();
+        $event = Event::published()
+            ->with(['ticketTypes' => fn ($q) => $q->where('is_active', true)])
+            ->where('slug', $slug)
+            ->first();
 
         if (!$event) {
             return response()->json([

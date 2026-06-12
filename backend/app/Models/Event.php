@@ -65,6 +65,22 @@ class Event extends Model
     }
 
     /**
+     * Get the ticket types (tiers) for the event.
+     */
+    public function ticketTypes(): HasMany
+    {
+        return $this->hasMany(TicketType::class);
+    }
+
+    /**
+     * Get the issued tickets (one per seat) for the event.
+     */
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    /**
      * Scope a query to only include published events.
      */
     public function scopePublished(Builder $query): Builder
@@ -92,6 +108,12 @@ class Event extends Model
             'currency' => $this->currency,
             'capacity' => $this->capacity,
             'is_published' => $this->is_published,
+            // Phase 2: read-only active ticket types for the public event page.
+            // Existing keys above are untouched (backward compatible). Uses the
+            // already-loaded relation when eager-loaded, else lazy-loads it.
+            'ticket_types' => $this->relationLoaded('ticketTypes')
+                ? $this->ticketTypes->where('is_active', true)->map->toPublicArray()->values()
+                : $this->ticketTypes()->where('is_active', true)->get()->map->toPublicArray()->values(),
         ];
     }
 }

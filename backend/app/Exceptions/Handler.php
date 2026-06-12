@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -25,6 +26,17 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        // Phase 2: surface issuance domain errors as 422 JSON (sold-out / at-capacity).
+        // The free /register path catches these inline; this covers the (Phase 3) paid
+        // purchase path + any future caller uniformly.
+        $this->renderable(function (InventoryExceededException|CapacityExceededException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+            }
+
+            return null;
         });
     }
 }

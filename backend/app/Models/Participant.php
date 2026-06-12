@@ -51,6 +51,15 @@ class Participant extends Model
     }
 
     /**
+     * Get the tickets (seats) backed by this participant. A participant may now back
+     * several seats across events (the H5 fix keeps each seat distinct).
+     */
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    /**
      * Get the event this participant belongs to (nullable for legacy participants).
      */
     public function event(): BelongsTo

@@ -118,6 +118,24 @@ class QrCodeService
     }
 
     /**
+     * Whether a decoded payload carries an `exp` (unix timestamp) that is now past.
+     *
+     * Back-compatible: v1 participant payloads have no `exp` key, so this returns
+     * false for them (they never expire via the QR layer). Used by the scanner as a
+     * cheap pre-check; the ticket row's expires_at remains the durable source of truth.
+     *
+     * @param array<string, mixed> $payload
+     */
+    public function isExpired(array $payload): bool
+    {
+        if (! isset($payload['exp'])) {
+            return false;
+        }
+
+        return time() > (int) $payload['exp'];
+    }
+
+    /**
      * Base64 URL encode
      */
     private function base64UrlEncode(string $data): string
