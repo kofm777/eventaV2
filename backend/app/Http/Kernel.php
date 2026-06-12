@@ -73,6 +73,8 @@ class Kernel extends HttpKernel
         // Phase 1 RBAC gates: parameterized role check + active-organizer guard.
         'role' => \App\Http\Middleware\RequireRole::class,
         'organizer.active' => \App\Http\Middleware\EnsureActiveOrganizer::class,
+        // Phase 6 attendee gate: assert the sanctum-attendee user is an Attendee.
+        'attendee' => \App\Http\Middleware\EnsureAttendee::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,

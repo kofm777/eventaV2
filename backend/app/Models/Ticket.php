@@ -34,6 +34,9 @@ class Ticket extends Model
         'order_item_id',
         'ticket_type_id',
         'participant_id',
+        // Phase 6: nullable FK to the owning attendee account (propagated from the
+        // order at issuance). NULL for guest/free/legacy seats.
+        'attendee_id',
         'attendee_first_name',
         'attendee_last_name',
         'attendee_email',
@@ -86,6 +89,14 @@ class Ticket extends Model
     public function participant(): BelongsTo
     {
         return $this->belongsTo(Participant::class);
+    }
+
+    /**
+     * Phase 6: the owning attendee account for this seat (NULL for guest/legacy seats).
+     */
+    public function attendee(): BelongsTo
+    {
+        return $this->belongsTo(Attendee::class);
     }
 
     /**

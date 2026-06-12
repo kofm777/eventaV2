@@ -70,6 +70,10 @@ class OrderService
                 'organizer_id' => $event->organizer_id,
                 'order_number' => $this->generateOrderNumber(),
                 'event_id' => $event->id,
+                // Phase 6: stamp the logged-in attendee (set EXPLICITLY from the token by
+                // PurchaseController, like organizer_id from the event). NULL for guests —
+                // Attendee has nothing to do with the BelongsToOrganizer tenant scope.
+                'attendee_id' => $buyer['attendee_id'] ?? null,
                 'buyer_email' => $buyer['email'],
                 'buyer_first_name' => $buyer['first_name'],
                 'buyer_last_name' => $buyer['last_name'],
@@ -357,6 +361,10 @@ class OrderService
             'order_item_id' => $orderItem?->id,
             'ticket_type_id' => $ticketType?->id,
             'participant_id' => $participant?->id,
+            // Phase 6: propagate the order's owning attendee onto each issued seat so the
+            // wallet can query tickets directly. NULL for the free /register + legacy
+            // (order-less) paths and for every guest order.
+            'attendee_id' => $order?->attendee_id,
             'attendee_first_name' => $attendee['first_name'] ?? null,
             'attendee_last_name' => $attendee['last_name'] ?? null,
             'attendee_email' => $attendee['email'] ?? null,

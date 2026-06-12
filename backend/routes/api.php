@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\OrganizerController as AdminOrganizerController;
 use App\Http\Controllers\Admin\PlatformController;
 use App\Http\Controllers\Admin\TicketTypeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AttendeeAuthController;
+use App\Http\Controllers\AttendeeOrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\OrganizerSignupController;
@@ -102,6 +104,24 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/scan-conference', [ScanController::class, 'scanConference'])
             ->middleware('throttle:30,1');
+    });
+
+    // PHASE 6 — attendee (public account) auth + wallet. A THIRD identity on its OWN
+    // 'sanctum-attendee' guard (provider 'attendees'); fully separate from the admin
+    // routes below. register/login are public (throttle:5,1, like admin login); the
+    // rest sit behind auth:sanctum-attendee + the EnsureAttendee backstop so an admin
+    // token is rejected at BOTH the guard and the middleware.
+    Route::prefix('attendee')->group(function () {
+        Route::post('/register', [AttendeeAuthController::class, 'register'])
+            ->middleware('throttle:5,1');
+        Route::post('/login', [AttendeeAuthController::class, 'login'])
+            ->middleware('throttle:5,1');
+
+        Route::middleware(['auth:sanctum-attendee', 'attendee'])->group(function () {
+            Route::post('/logout', [AttendeeAuthController::class, 'logout']);
+            Route::get('/me', [AttendeeAuthController::class, 'me']);
+            Route::get('/my-tickets', [AttendeeOrderController::class, 'myTickets']);
+        });
     });
 
     // Admin auth

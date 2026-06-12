@@ -45,6 +45,9 @@ class Order extends Model
         'order_number',
         'event_id',
         'participant_id',
+        // Phase 6: nullable FK to the logged-in attendee who placed this order.
+        // NULL for every guest/legacy order (guest checkout unchanged).
+        'attendee_id',
         'buyer_email',
         'buyer_first_name',
         'buyer_last_name',
@@ -102,6 +105,14 @@ class Order extends Model
     public function participant(): BelongsTo
     {
         return $this->belongsTo(Participant::class);
+    }
+
+    /**
+     * Phase 6: the logged-in attendee who placed this order (NULL for guest orders).
+     */
+    public function attendee(): BelongsTo
+    {
+        return $this->belongsTo(Attendee::class);
     }
 
     /**

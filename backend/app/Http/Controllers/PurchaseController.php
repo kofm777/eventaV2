@@ -42,8 +42,20 @@ class PurchaseController extends Controller
             ], 403);
         }
 
+        // PHASE 6 (additive, opt-in): the purchase route stays PUBLIC. We additionally
+        // inspect the attendee guard WITHOUT requiring it — $request->user('sanctum-attendee')
+        // returns the Attendee when a valid attendee Bearer token was sent, else null
+        // (no token / guest / an admin token = null, no error, treated as guest). When
+        // non-null we stamp attendee_id onto the order; presence of a token NEVER changes
+        // validation or the guest path, so a logged-out buyer behaves exactly as today.
+        $buyer = $request->validated();
+        $attendee = $request->user('sanctum-attendee');
+        if ($attendee) {
+            $buyer['attendee_id'] = $attendee->id;
+        }
+
         try {
-            $order = $this->orderService->createOrder($event, $request->validated());
+            $order = $this->orderService->createOrder($event, $buyer);
 
             // FREE TICKETS (amount_total == 0) bypass EVERY payment driver and issue
             // immediately. The free branch keys off the server-computed amount_total
