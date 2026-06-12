@@ -18,5 +18,12 @@ class DatabaseSeeder extends Seeder
             DefaultEventSeeder::class,
             AdminSeeder::class,
         ]);
+
+        // Optional, env-gated: a full set of known TEST accounts (owner/admin/staff/
+        // attendee) + a demo event. Only runs when SEED_TEST_ACCOUNTS is set, so prod
+        // stays clean unless explicitly requested.
+        if (env('SEED_TEST_ACCOUNTS')) {
+            $this->call([TestAccountsSeeder::class]);
+        }
     }
 }
