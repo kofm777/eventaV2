@@ -19,6 +19,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:Cg7uQ0m3l4x1m9o0p2q3r4s5t6u7v8w9x0y1z2a3b4c="/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="DB_DATABASE" value="testing"/>
@@ -26,5 +27,10 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="QR_HMAC_SECRET" value="testing-qr-hmac-secret-please-change-32chars-minimum"/>
+        <env name="PAYMENT_DRIVER" value="stub"/>
+        <env name="ALLOW_STUB_PAYMENTS" value="true"/>
+        <env name="FRONTEND_URL" value="http://localhost:4200"/>
+        <env name="PASSWORD_RESET_DEBUG" value="true"/>
     </php>
 </phpunit>
