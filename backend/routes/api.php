@@ -34,19 +34,28 @@ Route::prefix('v1')->group(function () {
     Route::get('/events/{slug}', [PublicEventController::class, 'show'])
         ->middleware('throttle:30,1');
 
-    // Guest ticket purchase lifecycle
-    // DISABLED until real payment gateway (Phase 3) — see CORRECTION_PLAN.md
-    // Route::post('/events/{slug}/purchase', [PurchaseController::class, 'purchase'])
-    //     ->middleware('throttle:5,1');
-    // Route::post('/orders/{order_number}/confirm', [PurchaseController::class, 'confirm'])
-    //     ->middleware('throttle:10,1');
+    // Guest ticket purchase lifecycle (Phase 3 — RE-ENABLED with the secure flow).
+    //   purchase: creates a PENDING_PAYMENT order (+ order_items); free orders
+    //             (amount_total 0) issue immediately, paid orders return a
+    //             client_action (stub: auto_confirm, flouci: redirect URL).
+    //   confirm : driver-confirm. Stub auto-confirms (demo); Flouci re-verifies
+    //             SERVER-SIDE via verify_payment and issues ONLY on result SUCCESS.
+    //             This is also the Flouci return/verify endpoint — the buyer's
+    //             /payment/flouci/return page POSTs {payment_id} here; a forged
+    //             return cannot mint tickets because verification is server-to-server.
+    Route::post('/events/{slug}/purchase', [PurchaseController::class, 'purchase'])
+        ->middleware('throttle:5,1');
+    Route::post('/orders/{order_number}/confirm', [PurchaseController::class, 'confirm'])
+        ->middleware('throttle:10,1');
     Route::get('/orders/{order_number}', [PurchaseController::class, 'show'])
         ->middleware('throttle:30,1');
 
-    // Payment gateway webhook (STUB) — API route, no CSRF.
-    // DISABLED until real payment gateway (Phase 3) — see CORRECTION_PLAN.md
-    // Route::post('/payments/webhook', [PaymentWebhookController::class, 'handle'])
-    //     ->middleware('throttle:60,1');
+    // Payment gateway webhook — API route, no CSRF. RE-ENABLED for future signed-webhook
+    // gateways; INERT for Flouci (handleWebhook returns null => 404), which uses pull-based
+    // verification on return instead. The only thing that flips an order to PAID in prod
+    // is a successful server-side verify_payment.
+    Route::post('/payments/webhook', [PaymentWebhookController::class, 'handle'])
+        ->middleware('throttle:60,1');
 
     // Public no-login ticket access by secure token
     Route::get('/tickets/{token}', [TicketController::class, 'show'])
@@ -125,8 +134,8 @@ Route::prefix('v1')->group(function () {
             Route::delete('/events/{id}', [EventController::class, 'destroy']);
 
             // Ticket types (Phase 2): nested under an event, auto-scoped by the Phase 0
-            // global scope. Purchase/confirm/webhook stay commented (Phase 3); scan
-            // routes unchanged.
+            // global scope. Purchase/confirm/webhook are RE-ENABLED in Phase 3 (public
+            // routes above) with the secure driver flow; scan routes unchanged.
             Route::get('/events/{event}/ticket-types', [TicketTypeController::class, 'index']);
             Route::post('/events/{event}/ticket-types', [TicketTypeController::class, 'store']);
             Route::put('/events/{event}/ticket-types/{id}', [TicketTypeController::class, 'update']);

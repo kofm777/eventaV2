@@ -80,7 +80,10 @@ class OrderService
                 'amount_total' => $amountTotal,
                 'currency' => $event->currency,
                 'status' => Order::STATUS_PENDING_PAYMENT,
-                'payment_provider' => 'stub',
+                // Stamp the provisional driver from config so flouci orders are
+                // tagged correctly at creation. createIntent() re-stamps definitively
+                // (e.g. 'flouci'); the free branch overrides to 'free' on issuance.
+                'payment_provider' => (string) config('services.payments.driver', 'stub'),
             ]);
 
             foreach ($lines as $line) {
@@ -129,11 +132,24 @@ class OrderService
             $firstTicket = $tickets[0] ?? null;
             $primaryParticipant = $firstTicket ? $firstTicket->participant : null;
 
+            // Capture platform commission at the single atomic moment the order
+            // becomes PAID — so EVERY paid path (free, stub, flouci) records it once.
+            // Rate default 0 => platform_fee=0, organizer_amount=amount_total (no-op
+            // until the owner sets PLATFORM_COMMISSION_RATE). Free orders naturally get
+            // platform_fee=0 / organizer_amount=0 since amount_total=0. These are pure
+            // CAPTURE columns; a payout ledger + organizer payout UI are DEFERRED.
+            $rate = (float) config('services.payments.commission_rate', 0);
+            $amountTotal = (float) $order->amount_total;
+            $platformFee = round($amountTotal * $rate, 2);
+            $organizerAmount = round($amountTotal - $platformFee, 2);
+
             // Mark order PAID; point participant_id + ticket_download_token at the first
             // issued seat so the existing TicketController + email link keep resolving.
             $order->participant_id = $primaryParticipant?->id;
             $order->status = Order::STATUS_PAID;
             $order->paid_at = now();
+            $order->platform_fee = $platformFee;
+            $order->organizer_amount = $organizerAmount;
             $order->payment_reference = $reference !== ''
                 ? $reference
                 : ($order->payment_reference ?: 'stub_ref_' . Str::random(16));

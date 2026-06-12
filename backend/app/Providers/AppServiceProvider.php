@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Payments\FlouciPaymentService;
 use App\Services\Payments\PaymentService;
 use App\Services\Payments\StubPaymentService;
 use App\Tenancy\OrganizerContext;
@@ -22,12 +23,17 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(\NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider::class);
         }
 
-        // Payment gateway resolution. The stub auto-confirms; swapping in a real
-        // provider only changes this binding (and the PaymentService impl), never
-        // the controllers or OrderService.
-        // TODO(real gateway): bind StripePaymentService::class based on
-        // config('services.payments.driver').
-        $this->app->bind(PaymentService::class, StubPaymentService::class);
+        // Payment gateway resolution, driven by config('services.payments.driver')
+        // = env('PAYMENT_DRIVER','stub'). Swapping the gateway only changes this
+        // binding (and the PaymentService impl), never the controllers or OrderService.
+        //   'flouci' -> real TND gateway, server-verified on return.
+        //   default  -> the auto-confirming demo stub (NO real charge).
+        $this->app->bind(PaymentService::class, function () {
+            return match (config('services.payments.driver')) {
+                'flouci' => new FlouciPaymentService(), // resolves Http/Guzzle itself
+                default => new StubPaymentService(),
+            };
+        });
     }
 
     public function boot(): void

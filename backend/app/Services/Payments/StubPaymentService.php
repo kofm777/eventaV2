@@ -3,14 +3,20 @@
 namespace App\Services\Payments;
 
 use App\Models\Order;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Auto-confirming payment stub.
  *
  * Implements the full real-gateway lifecycle (intent -> confirm -> webhook) so that
- * swapping in a real provider (Stripe / Paymee / Konnect) only changes the body of
- * these methods, never the controllers or OrderService.
+ * swapping in a real provider (Stripe / Paymee / Konnect / Flouci) only changes the
+ * body of these methods, never the controllers or OrderService.
+ *
+ * INTENTIONALLY permissive (confirm() returns paid:true unconditionally) — that is
+ * the demo affordance, fenced entirely behind PAYMENT_DRIVER=stub. Once a real
+ * gateway is live, set PAYMENT_DRIVER=flouci and this is never the prod path.
  */
 class StubPaymentService implements PaymentService
 {
@@ -19,6 +25,25 @@ class StubPaymentService implements PaymentService
      */
     public function createIntent(Order $order): PaymentIntentResult
     {
+        // Make misconfiguration loud: a stub createIntent in any environment means
+        // NO real charge is being taken for this order.
+        Log::warning('STUB payment driver active — NO real charge. Demo only.', [
+            'order_number' => $order->order_number,
+            'amount_total' => $order->amount_total,
+        ]);
+
+        // Optional hard guard: refuse the stub under APP_ENV=production unless the
+        // owner explicitly opted in via ALLOW_STUB_PAYMENTS=true. Keeps a prod
+        // misconfig from silently issuing tickets for unpaid orders.
+        if (app()->environment('production')
+            && ! (bool) config('services.payments.allow_stub_in_production')) {
+            Log::error('STUB payment driver blocked in production. Set PAYMENT_DRIVER=flouci or ALLOW_STUB_PAYMENTS=true.', [
+                'order_number' => $order->order_number,
+            ]);
+
+            throw new RuntimeException('Stub payment driver is disabled in production.');
+        }
+
         $order->payment_provider = 'stub';
         $order->payment_intent_id = 'stub_' . Str::random(24);
         $order->save();

@@ -44,6 +44,9 @@ class Order extends Model
         'payment_provider',
         'payment_intent_id',
         'payment_reference',
+        'payment_link',
+        'platform_fee',
+        'organizer_amount',
         'paid_at',
         'ticket_download_token',
     ];
@@ -56,6 +59,8 @@ class Order extends Model
     protected $casts = [
         'quantity' => 'integer',
         'amount_total' => 'decimal:2',
+        'platform_fee' => 'decimal:2',
+        'organizer_amount' => 'decimal:2',
         'paid_at' => 'datetime',
     ];
 
