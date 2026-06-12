@@ -74,6 +74,52 @@ class OrganizerController extends Controller
     }
 
     /**
+     * Phase 5 — set (or clear) an organizer's per-org commission rate.
+     *
+     * Validates commission_rate as a fraction in [0, 1] (e.g. 0.05 = 5%); a null value
+     * clears the override so the organizer falls back to the platform default. Idempotent
+     * (mirrors setStatus). NOTE: only NEW PAID orders pick up a changed rate — historical
+     * orders keep their captured platform_fee/organizer_amount (capture-at-PAID semantics).
+     */
+    public function setCommissionRate(int $id, Request $request): JsonResponse
+    {
+        $organizer = Organizer::find($id);
+
+        if (! $organizer) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Organizer not found.',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'commission_rate' => 'nullable|numeric|min:0|max:1',
+        ]);
+
+        $rate = array_key_exists('commission_rate', $validated) && $validated['commission_rate'] !== null
+            ? round((float) $validated['commission_rate'], 4)
+            : null;
+
+        if ((string) $organizer->commission_rate !== (string) $rate) {
+            $organizer->update(['commission_rate' => $rate]);
+
+            Log::info('Organizer commission rate changed', [
+                'organizer_id' => $organizer->id,
+                'commission_rate' => $rate,
+            ]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'organizer' => [
+                'id' => $organizer->id,
+                'commission_rate' => $organizer->commission_rate,
+            ],
+            'message' => 'Commission rate updated.',
+        ]);
+    }
+
+    /**
      * Set an organizer's status idempotently and return its summary.
      */
     private function setStatus(int $id, string $status, string $message): JsonResponse

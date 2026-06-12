@@ -19,6 +19,21 @@ class Order extends Model
     public const STATUS_PAID = 'PAID';
     public const STATUS_FAILED = 'FAILED';
     public const STATUS_CANCELLED = 'CANCELLED';
+    public const STATUS_REFUNDED = 'REFUNDED';
+
+    /**
+     * Terminal statuses — once an order reaches one of these it must never be moved
+     * to another status. PAID/REFUNDED are the critical "never overwrite a successful
+     * order" invariants; FAILED/CANCELLED are also terminal (no further writes).
+     *
+     * @var array<int, string>
+     */
+    public const TERMINAL = [
+        self::STATUS_PAID,
+        self::STATUS_REFUNDED,
+        self::STATUS_FAILED,
+        self::STATUS_CANCELLED,
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -111,5 +126,65 @@ class Order extends Model
     public function isPaid(): bool
     {
         return $this->status === self::STATUS_PAID;
+    }
+
+    /**
+     * Whether the order is in a terminal status (no further status writes allowed).
+     */
+    public function isTerminal(): bool
+    {
+        return in_array($this->status, self::TERMINAL, true);
+    }
+
+    /**
+     * Phase 5 state-machine guard: whether a transition to $to is legal from the
+     * current status. Only a PENDING_PAYMENT order may move to PAID/FAILED/CANCELLED;
+     * a terminal order (PAID/REFUNDED/FAILED/CANCELLED) rejects every status write so
+     * a confirm/webhook can never overwrite a successful PAID/REFUNDED order.
+     */
+    public function canTransitionTo(string $to): bool
+    {
+        // No-op transition to the same status is always allowed (idempotent).
+        if ($this->status === $to) {
+            return true;
+        }
+
+        // Only a pending order may move forward into a settled state.
+        if ($this->status === self::STATUS_PENDING_PAYMENT) {
+            return in_array($to, [
+                self::STATUS_PAID,
+                self::STATUS_FAILED,
+                self::STATUS_CANCELLED,
+            ], true);
+        }
+
+        // Any other (terminal) status is frozen.
+        return false;
+    }
+
+    /**
+     * Phase 5 guarded transition: persists the new status only when the move is legal,
+     * returning true on success and false (no save) on an illegal transition (logging
+     * the rejection). Callers branch on the boolean to stay idempotent.
+     */
+    public function transitionTo(string $status): bool
+    {
+        if ($this->status === $status) {
+            return true; // already there — idempotent no-op
+        }
+
+        if (! $this->canTransitionTo($status)) {
+            \Illuminate\Support\Facades\Log::warning('Rejected illegal order transition', [
+                'order_number' => $this->order_number,
+                'from' => $this->status,
+                'to' => $status,
+            ]);
+
+            return false;
+        }
+
+        $this->update(['status' => $status]);
+
+        return true;
     }
 }

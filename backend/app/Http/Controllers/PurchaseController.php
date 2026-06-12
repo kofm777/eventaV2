@@ -33,6 +33,15 @@ class PurchaseController extends Controller
             ], 403);
         }
 
+        // Phase 5 hardening: block purchase for an already-ended event so a stale
+        // shared link cannot sell tickets after the event is over.
+        if ($event->ends_at && $event->ends_at->isPast()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This event has ended.',
+            ], 403);
+        }
+
         try {
             $order = $this->orderService->createOrder($event, $request->validated());
 
@@ -120,7 +129,9 @@ class PurchaseController extends Controller
                 $confirmation = $this->paymentService->confirm($order, $request->all());
 
                 if (!$confirmation->paid) {
-                    $order->update(['status' => Order::STATUS_FAILED]);
+                    // Phase 5 state guard: only flip a still-PENDING_PAYMENT order to
+                    // FAILED — never overwrite a terminal (e.g. CANCELLED/REFUNDED) order.
+                    $order->transitionTo(Order::STATUS_FAILED);
 
                     return response()->json([
                         'ok' => false,

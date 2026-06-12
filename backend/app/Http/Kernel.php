@@ -47,6 +47,9 @@ class Kernel extends HttpKernel
             // Resolve the current organizer from the Sanctum admin AFTER bindings so
             // the tenant global scope sees the right context on every API request.
             \App\Http\Middleware\ResolveOrganizer::class,
+            // Phase 5 hardening — additive baseline security response headers (last so
+            // it stamps the final response without altering body/status/routing).
+            \App\Http\Middleware\SecurityHeaders::class,
         ],
     ];
 

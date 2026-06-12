@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\OrganizerController as AdminOrganizerController;
+use App\Http\Controllers\Admin\PlatformController;
 use App\Http\Controllers\Admin\TicketTypeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
@@ -130,6 +131,15 @@ Route::prefix('v1')->group(function () {
             Route::post('/organizers/{id}/approve', [AdminOrganizerController::class, 'approve']);
             Route::post('/organizers/{id}/suspend', [AdminOrganizerController::class, 'suspend']);
             Route::post('/organizers/{id}/reactivate', [AdminOrganizerController::class, 'reactivate']);
+
+            // PHASE 5 — super-admin platform control plane (analytics + payout ledger
+            // + per-organizer commission). Reads the Phase 3 capture columns; relies on
+            // the super-admin scope bypass so Order::query() aggregates every organizer.
+            Route::get('/platform/analytics', [PlatformController::class, 'analytics']);
+            Route::get('/platform/balances', [PlatformController::class, 'balances']);
+            Route::put('/organizers/{id}/commission-rate', [AdminOrganizerController::class, 'setCommissionRate']);
+            Route::get('/organizers/{id}/payouts', [PlatformController::class, 'payoutHistory']);
+            Route::post('/organizers/{id}/payouts', [PlatformController::class, 'recordPayout']);
         });
 
     // Organizer console (owner/admin manage only their OWN rows via the Phase 0 scope;

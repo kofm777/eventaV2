@@ -88,7 +88,10 @@ class EventController extends Controller
     }
 
     /**
-     * Update an event. Slug is regenerated only if the name changes (and stays unique).
+     * Update an event. Phase 5 hardening: the slug is IMMUTABLE on rename — it is
+     * minted once at store() and never regenerated here, so shared /events/{slug}
+     * and storefront links never 404 after a rename. UpdateEventRequest does not
+     * accept 'slug', so a client cannot smuggle one in.
      */
     public function update(UpdateEventRequest $request, int $id): JsonResponse
     {
@@ -104,9 +107,7 @@ class EventController extends Controller
 
             $data = $request->validated();
 
-            if (array_key_exists('name', $data) && $data['name'] !== $event->name) {
-                $data['slug'] = $this->uniqueSlug($data['name'], $event->id);
-            }
+            // Slug is intentionally left untouched on update (link stability).
 
             $event->update($data);
 

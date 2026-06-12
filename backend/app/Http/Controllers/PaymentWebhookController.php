@@ -51,7 +51,9 @@ class PaymentWebhookController extends Controller
                     $confirmation->reference
                 );
             } else {
-                $confirmation->order->update(['status' => \App\Models\Order::STATUS_FAILED]);
+                // Phase 5 state guard: only a still-PENDING_PAYMENT order may move to
+                // FAILED — never overwrite a terminal (PAID/REFUNDED/...) order.
+                $confirmation->order->transitionTo(\App\Models\Order::STATUS_FAILED);
             }
 
             return response()->json(['ok' => true]);

@@ -8,6 +8,7 @@ use App\Mail\ParticipantAccessMail;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Organizer;
 use App\Models\Participant;
 use App\Models\Ticket;
 use App\Models\TicketType;
@@ -124,6 +125,18 @@ class OrderService
                 return $order;
             }
 
+            // Phase 5 state guard: only a still-PENDING_PAYMENT order may be issued/PAID.
+            // A terminal order (REFUNDED/FAILED/CANCELLED) must never be re-issued. The
+            // PAID case is already short-circuited above; this protects the others.
+            if ($order->status !== Order::STATUS_PENDING_PAYMENT) {
+                Log::warning('Refused to issue tickets for a non-pending order', [
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                ]);
+
+                return $order;
+            }
+
             $event = Event::find($order->event_id);
 
             // Issue N tickets across the order's items (one ticket per seat).
@@ -134,11 +147,16 @@ class OrderService
 
             // Capture platform commission at the single atomic moment the order
             // becomes PAID — so EVERY paid path (free, stub, flouci) records it once.
-            // Rate default 0 => platform_fee=0, organizer_amount=amount_total (no-op
-            // until the owner sets PLATFORM_COMMISSION_RATE). Free orders naturally get
-            // platform_fee=0 / organizer_amount=0 since amount_total=0. These are pure
-            // CAPTURE columns; a payout ledger + organizer payout UI are DEFERRED.
-            $rate = (float) config('services.payments.commission_rate', 0);
+            // Phase 5: source the rate from the order's organizer when it has a
+            // per-org commission_rate, otherwise fall back to the platform default
+            // config('services.payments.commission_rate'). When commission_rate is NULL
+            // the value is byte-for-byte the Phase 3 config rate, so existing PAID-order
+            // math is unchanged. Free orders naturally get platform_fee=0 /
+            // organizer_amount=0 since amount_total=0. These are pure CAPTURE columns.
+            $organizer = $order->organizer_id ? Organizer::find($order->organizer_id) : null;
+            $rate = $organizer
+                ? $organizer->effectiveCommissionRate()
+                : (float) config('services.payments.commission_rate', 0);
             $amountTotal = (float) $order->amount_total;
             $platformFee = round($amountTotal * $rate, 2);
             $organizerAmount = round($amountTotal - $platformFee, 2);

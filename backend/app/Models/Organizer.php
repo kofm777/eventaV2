@@ -43,6 +43,17 @@ class Organizer extends Model
         'brand_color',
         'tagline',
         'website_url',
+        // Phase 5 per-organizer commission override (nullable; null = platform default).
+        'commission_rate',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'commission_rate' => 'decimal:4',
     ];
 
     /**
@@ -107,6 +118,49 @@ class Organizer extends Model
     public function admins(): HasMany
     {
         return $this->hasMany(Admin::class);
+    }
+
+    /**
+     * Manual payout ledger entries recorded against this organizer (Phase 5).
+     */
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class);
+    }
+
+    /**
+     * Phase 5 — the commission rate this organizer is actually charged.
+     *
+     * Prefers the organizer's own commission_rate when set; falls back to the
+     * platform default config('services.payments.commission_rate'). When the column
+     * is NULL the returned value is byte-for-byte identical to the Phase 3 config
+     * rate, so OrderService produces the same platform_fee/organizer_amount math.
+     */
+    public function effectiveCommissionRate(): float
+    {
+        return $this->commission_rate !== null
+            ? (float) $this->commission_rate
+            : (float) config('services.payments.commission_rate', 0);
+    }
+
+    /**
+     * Phase 5 — outstanding balance owed to this organizer:
+     *   SUM(PAID orders.organizer_amount) - SUM(completed payouts.amount).
+     *
+     * Uses the orders() relation (explicitly organizer-keyed, and a no-op under the
+     * super-admin scope-bypass) so it is correct from the platform console.
+     */
+    public function balance(): float
+    {
+        $gross = (float) $this->orders()
+            ->where('status', Order::STATUS_PAID)
+            ->sum('organizer_amount');
+
+        $paidOut = (float) $this->payouts()
+            ->where('status', Payout::STATUS_COMPLETED)
+            ->sum('amount');
+
+        return round($gross - $paidOut, 2);
     }
 
     /**
