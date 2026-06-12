@@ -67,6 +67,9 @@ class Kernel extends HttpKernel
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'resolve.organizer' => \App\Http\Middleware\ResolveOrganizer::class,
+        // Phase 1 RBAC gates: parameterized role check + active-organizer guard.
+        'role' => \App\Http\Middleware\RequireRole::class,
+        'organizer.active' => \App\Http\Middleware\EnsureActiveOrganizer::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
@@ -76,5 +79,7 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'role' => \App\Http\Middleware\RequireRole::class,
+        'organizer.active' => \App\Http\Middleware\EnsureActiveOrganizer::class,
     ];
 }

@@ -54,9 +54,28 @@ class AuthController extends Controller
             'ok' => true,
             // Additive role/organizer_id keys; id/name/email unchanged so the frontend keeps working.
             'admin' => $admin->only(['id', 'name', 'email', 'role', 'organizer_id']),
+            // Additive: organizer summary (incl status) so the SPA can route/banner
+            // pending/suspended owners. null for super-admin.
+            'organizer' => $this->organizerSummary($admin),
             'token' => $token,
             'message' => 'Connexion réussie.',
         ]);
+    }
+
+    /**
+     * Build the organizer summary attached to login/me, or null for super-admins.
+     */
+    private function organizerSummary(Admin $admin): ?array
+    {
+        if ($admin->isSuperAdmin()) {
+            return null;
+        }
+
+        $organizer = $admin->organizer;
+
+        return $organizer
+            ? $organizer->only(['id', 'name', 'slug', 'status'])
+            : null;
     }
 
     /**
@@ -84,6 +103,9 @@ class AuthController extends Controller
             'ok' => true,
             // Additive role/organizer_id keys; id/name/email unchanged.
             'admin' => $admin->only(['id', 'name', 'email', 'role', 'organizer_id']),
+            // Additive: organizer summary (incl status) so the SPA can refresh
+            // approval state without re-login. null for super-admin.
+            'organizer' => $this->organizerSummary($admin),
         ]);
     }
 }

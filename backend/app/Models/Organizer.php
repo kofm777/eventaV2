@@ -19,9 +19,14 @@ class Organizer extends Model
 
     /**
      * Organizer status constants (app-validated, NOT a DB enum).
+     *
+     * STATUS_PENDING is new in Phase 1 (self-signup awaiting super-admin approval).
+     * It needs NO migration: the column is string(20) with an index('status'); the
+     * DB default stays 'active', and only self-signup explicitly writes 'pending'.
      */
     public const STATUS_ACTIVE = 'active';
     public const STATUS_SUSPENDED = 'suspended';
+    public const STATUS_PENDING = 'pending';
 
     /**
      * The attributes that are mass assignable.
@@ -36,11 +41,27 @@ class Organizer extends Model
     ];
 
     /**
-     * Whether the organizer is active (not suspended).
+     * Whether the organizer is active (approved, not pending/suspended).
      */
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    /**
+     * Whether the organizer is awaiting super-admin approval.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    /**
+     * Whether the organizer has been suspended by a super-admin.
+     */
+    public function isSuspended(): bool
+    {
+        return $this->status === self::STATUS_SUSPENDED;
     }
 
     /**
