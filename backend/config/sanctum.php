@@ -44,7 +44,8 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Tokens expire after 8 hours (480 minutes) instead of never.
+    'expiration' => 480,
 
     /*
     |--------------------------------------------------------------------------

@@ -19,13 +19,6 @@ Route::prefix('v1')->group(function () {
     Route::post('/register', [RegistrationController::class, 'register'])
         ->middleware('throttle:5,1');
 
-    // 🔐 Protected scan endpoints
-    Route::post('/scan-fair', [ScanController::class, 'scanFair'])
-        ->middleware('throttle:30,1');
-
-    Route::post('/scan-conference', [ScanController::class, 'scanConference'])
-        ->middleware('throttle:30,1');
-
     // Public events (PUBLISHED only)
     Route::get('/events', [PublicEventController::class, 'index'])
         ->middleware('throttle:30,1');
@@ -33,22 +26,33 @@ Route::prefix('v1')->group(function () {
         ->middleware('throttle:30,1');
 
     // Guest ticket purchase lifecycle
-    Route::post('/events/{slug}/purchase', [PurchaseController::class, 'purchase'])
-        ->middleware('throttle:5,1');
-    Route::post('/orders/{order_number}/confirm', [PurchaseController::class, 'confirm'])
-        ->middleware('throttle:10,1');
+    // DISABLED until real payment gateway (Phase 3) — see CORRECTION_PLAN.md
+    // Route::post('/events/{slug}/purchase', [PurchaseController::class, 'purchase'])
+    //     ->middleware('throttle:5,1');
+    // Route::post('/orders/{order_number}/confirm', [PurchaseController::class, 'confirm'])
+    //     ->middleware('throttle:10,1');
     Route::get('/orders/{order_number}', [PurchaseController::class, 'show'])
         ->middleware('throttle:30,1');
 
     // Payment gateway webhook (STUB) — API route, no CSRF.
-    Route::post('/payments/webhook', [PaymentWebhookController::class, 'handle'])
-        ->middleware('throttle:60,1');
+    // DISABLED until real payment gateway (Phase 3) — see CORRECTION_PLAN.md
+    // Route::post('/payments/webhook', [PaymentWebhookController::class, 'handle'])
+    //     ->middleware('throttle:60,1');
 
     // Public no-login ticket access by secure token
     Route::get('/tickets/{token}', [TicketController::class, 'show'])
         ->middleware('throttle:30,1');
     Route::get('/tickets/{token}/badge', [TicketController::class, 'badge'])
         ->middleware('throttle:30,1');
+
+    // Scan endpoints (require authentication)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/scan-fair', [ScanController::class, 'scanFair'])
+            ->middleware('throttle:30,1');
+
+        Route::post('/scan-conference', [ScanController::class, 'scanConference'])
+            ->middleware('throttle:30,1');
+    });
 
     // Admin auth
     Route::prefix('auth')->group(function () {

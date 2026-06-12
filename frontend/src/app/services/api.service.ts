@@ -52,12 +52,14 @@ export class ApiService {
   // Add these methods
   scanFair(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
     return this.http.post<ScanResponse>(`${this.apiUrl}/scan-fair`, data, {
+      headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   scanConference(data: { payload?: string; qr_image?: string; scanner_user?: string }): Observable<ScanResponse> {
     return this.http.post<ScanResponse>(`${this.apiUrl}/scan-conference`, data, {
+      headers: this.getHeaders(),
       withCredentials: true
     });
   }

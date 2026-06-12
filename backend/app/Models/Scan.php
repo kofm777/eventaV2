@@ -20,6 +20,7 @@ class Scan extends Model
         'scanned_at',
         'scanner_user',
         'raw_payload',
+        'scan_type',
     ];
 
     /**

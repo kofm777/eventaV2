@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Admin;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AdminSeeder extends Seeder
 {
@@ -14,12 +15,22 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         // Idempotent: safe to run on every deploy (migrate --seed runs at container start).
-        // Does not reset the password if the admin already exists, so a changed password sticks.
-        Admin::firstOrCreate(
-            ['email' => 'admin@example.com'],
+        // Env-driven: never seed a default weak password.
+        $email = env('ADMIN_EMAIL', 'admin@example.com');
+        $password = env('ADMIN_PASSWORD');
+
+        if (empty($password)) {
+            Log::warning('AdminSeeder skipped: ADMIN_PASSWORD is not set; no admin account seeded.');
+
+            return;
+        }
+
+        // updateOrCreate keyed on email: rotates the password to the current env value.
+        Admin::updateOrCreate(
+            ['email' => $email],
             [
                 'name' => 'Admin User',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make($password),
             ]
         );
     }

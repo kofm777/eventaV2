@@ -79,7 +79,7 @@ class ScanController extends Controller
                    'ok' => false,
                    'message' => 'Access denied. Registration not approved.',
                    'participant' => $participant->only([
-                       'id','first_name','last_name','company_name','gender','email','access_type','status'
+                       'id','first_name','last_name','gender','access_type','status'
                    ])
                ], 403);
            }
@@ -90,7 +90,7 @@ class ScanController extends Controller
                    'ok' => true,
                    'message' => 'Conference access not permitted for this participant.',
                    'participant' => $participant->only([
-                       'id','first_name','last_name','company_name','gender','email','access_type','status'
+                       'id','first_name','last_name','gender','access_type','status'
                    ])
                ], 200);
            }
@@ -106,7 +106,7 @@ class ScanController extends Controller
                return response()->json([
                    'ok' => true,
                    'participant' => $participant->only([
-                       'id','first_name','last_name','company_name','gender','email','access_type','status',
+                       'id','first_name','last_name','gender','access_type','status',
                        'scanned_fair','scanned_conference'
                    ]),
                    'is_already_scanned' => true,
@@ -131,6 +131,7 @@ class ScanController extends Controller
                'scanned_at' => now(),
                'scanner_user' => $request->scanner_user,
                'raw_payload' => $qrToken,
+               'scan_type' => $scanType,
            ]);
 
 // Send email after scan with BASE64 QR image
@@ -160,7 +161,7 @@ try {
            return response()->json([
                'ok' => true,
                'participant' => $participant->only([
-                   'id','first_name','last_name','company_name','gender','email','access_type','status',
+                   'id','first_name','last_name','gender','access_type','status',
                    'scanned_fair','scanned_conference'
                ]),
                'scan_id' => $scan->id,

@@ -9,12 +9,22 @@ class QrCodeService
 {
     private string $hmacSecret;
 
+    private const PLACEHOLDER_SECRET = 'your-very-long-random-secret-key-for-qr-code-signing';
+
     public function __construct()
     {
         $this->hmacSecret = config('app.qr_hmac_secret');
-        
+
         if (empty($this->hmacSecret)) {
-            throw new \Exception('QR_HMAC_SECRET not configured');
+            throw new \RuntimeException('QR_HMAC_SECRET not configured');
+        }
+
+        if ($this->hmacSecret === self::PLACEHOLDER_SECRET) {
+            throw new \RuntimeException('QR_HMAC_SECRET is set to the placeholder value; set a real random secret.');
+        }
+
+        if (strlen($this->hmacSecret) < 32) {
+            throw new \RuntimeException('QR_HMAC_SECRET must be at least 32 characters long.');
         }
     }
 
