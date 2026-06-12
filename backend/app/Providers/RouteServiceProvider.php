@@ -44,5 +44,18 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // PHASE 4 — find-my-tickets (audit H9). Contract requires a tight throttle
+        // KEYED BY EMAIL so a single target email cannot be probed for existence even
+        // across rotating IPs. Keyed on the normalized email + the client IP (3 / 10min):
+        // the email component caps attempts against any one address, the IP component
+        // still caps a single host hammering many emails. The endpoint already returns
+        // an identical generic response regardless of match, so this only hardens
+        // against brute-forcing; it never changes what is revealed.
+        RateLimiter::for('find-tickets', function (Request $request) {
+            $email = strtolower(trim((string) $request->input('email')));
+
+            return Limit::perMinutes(10, 3)->by($email !== '' ? 'find:' . $email : 'find-ip:' . $request->ip());
+        });
     }
 }

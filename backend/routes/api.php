@@ -9,11 +9,14 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\OrganizerSignupController;
 use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\PublicDiscoverController;
 use App\Http\Controllers\PublicEventController;
+use App\Http\Controllers\PublicOrganizerController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketRetrievalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', [HealthController::class, 'health']);
@@ -33,6 +36,24 @@ Route::prefix('v1')->group(function () {
         ->middleware('throttle:30,1');
     Route::get('/events/{slug}', [PublicEventController::class, 'show'])
         ->middleware('throttle:30,1');
+
+    // PHASE 4 — public marketplace. Cross-organizer, curated surface: published +
+    // visibility=marketplace + organizer.status=active, gated EXPLICITLY in the query
+    // (the tenant scope is a no-op for public). Leaves /events unchanged.
+    Route::get('/discover', [PublicDiscoverController::class, 'index'])
+        ->middleware('throttle:30,1');
+
+    // PHASE 4 — public per-organizer storefront. Active-org-only (404 + identical
+    // message otherwise => non-enumerable); returns the org's branding + published events.
+    Route::get('/organizers/{slug}', [PublicOrganizerController::class, 'show'])
+        ->middleware('throttle:30,1');
+
+    // PHASE 4 — attendee find-my-tickets (audit H9). Email-keyed magic-link re-send.
+    // ALWAYS returns a generic ok:true (no email-existence leak); tight 3/10min throttle
+    // KEYED BY EMAIL (named 'find-tickets' limiter in RouteServiceProvider) blocks probing
+    // a single address even across IPs. POST so it never collides with GET /tickets/{token}.
+    Route::post('/tickets/find', [TicketRetrievalController::class, 'send'])
+        ->middleware('throttle:find-tickets');
 
     // Guest ticket purchase lifecycle (Phase 3 — RE-ENABLED with the secure flow).
     //   purchase: creates a PENDING_PAYMENT order (+ order_items); free orders

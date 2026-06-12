@@ -38,6 +38,11 @@ class Organizer extends Model
         'slug',
         'status',
         'contact_email',
+        // Phase 4 storefront branding (all nullable).
+        'logo_url',
+        'brand_color',
+        'tagline',
+        'website_url',
     ];
 
     /**
@@ -102,5 +107,25 @@ class Organizer extends Model
     public function admins(): HasMany
     {
         return $this->hasMany(Admin::class);
+    }
+
+    /**
+     * Public-safe storefront shape (Phase 4). Exposes ONLY the org's public identity
+     * and nullable branding — never status, contact_email, or any tenant-internal field.
+     * This is a NEW method (the model had none) so no existing serialization changes.
+     *
+     * @return array<string, mixed>
+     */
+    public function toPublicArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'logo_url' => $this->logo_url,
+            'brand_color' => $this->brand_color,
+            'tagline' => $this->tagline,
+            'website_url' => $this->website_url,
+        ];
     }
 }

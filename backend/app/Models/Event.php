@@ -13,6 +13,16 @@ class Event extends Model
     use BelongsToOrganizer, HasFactory;
 
     /**
+     * Visibility constants (Phase 4, app-validated plain string, NOT a DB enum).
+     *
+     * VISIBILITY_MARKETPLACE : shows on /discover + storefront + direct slug link.
+     * VISIBILITY_UNLISTED    : hidden from /discover, still reachable by direct slug
+     *                          link and shown on the owning organizer's storefront.
+     */
+    public const VISIBILITY_MARKETPLACE = 'marketplace';
+    public const VISIBILITY_UNLISTED = 'unlisted';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -30,6 +40,7 @@ class Event extends Model
         'currency',
         'capacity',
         'is_published',
+        'visibility',
         'is_default',
     ];
 
@@ -89,6 +100,15 @@ class Event extends Model
     }
 
     /**
+     * Scope a query to only include marketplace-visible events (excludes 'unlisted').
+     * Used by the public /discover surface so unlisted events stay off the marketplace.
+     */
+    public function scopeMarketplace(Builder $query): Builder
+    {
+        return $query->where('visibility', self::VISIBILITY_MARKETPLACE);
+    }
+
+    /**
      * Fields exposed to the public API (omits is_default / internal-only flags).
      *
      * @return array<string, mixed>
@@ -115,5 +135,29 @@ class Event extends Model
                 ? $this->ticketTypes->where('is_active', true)->map->toPublicArray()->values()
                 : $this->ticketTypes()->where('is_active', true)->get()->map->toPublicArray()->values(),
         ];
+    }
+
+    /**
+     * Marketplace-card shape (Phase 4): the exact public shape PLUS the visibility flag
+     * and an organizer attribution block (id/name/slug only — no private org fields).
+     *
+     * Backward compatible: this is a NEW method; toPublicArray() is unchanged, so the
+     * frontend PublicEvent type only gains an OPTIONAL `organizer` (+ `visibility`) field.
+     * Expects organizer:id,name,slug to be eager-loaded by the caller (no N+1).
+     *
+     * @return array<string, mixed>
+     */
+    public function toMarketplaceArray(): array
+    {
+        return array_merge($this->toPublicArray(), [
+            'visibility' => $this->visibility,
+            'organizer' => $this->relationLoaded('organizer') && $this->organizer
+                ? [
+                    'id' => $this->organizer->id,
+                    'name' => $this->organizer->name,
+                    'slug' => $this->organizer->slug,
+                ]
+                : null,
+        ]);
     }
 }
