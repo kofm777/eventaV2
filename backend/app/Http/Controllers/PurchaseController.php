@@ -42,6 +42,15 @@ class PurchaseController extends Controller
             ], 403);
         }
 
+        // Refunds & cancellations: block new purchases for a cancelled event regardless
+        // of entry path (direct slug link, storefront, /discover). No-op for active/NULL.
+        if ($event->isCancelled()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This event has been cancelled.',
+            ], 403);
+        }
+
         // PHASE 6 (additive, opt-in): the purchase route stays PUBLIC. We additionally
         // inspect the attendee guard WITHOUT requiring it — $request->user('sanctum-attendee')
         // returns the Attendee when a valid attendee Bearer token was sent, else null

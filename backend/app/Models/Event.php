@@ -23,6 +23,18 @@ class Event extends Model
     public const VISIBILITY_UNLISTED = 'unlisted';
 
     /**
+     * Lifecycle status constants (app-validated plain string, NOT a DB enum, matching
+     * the visibility convention). NULL is treated as STATUS_ACTIVE for back-compat so
+     * every existing row stays active/visible with no backfill.
+     *
+     * STATUS_ACTIVE    : normal — listed on /discover + storefront, purchasable.
+     * STATUS_CANCELLED : event cancelled — hidden from /discover + storefront, purchase
+     *                    blocked, all orders refunded/cancelled + tickets voided.
+     */
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_CANCELLED = 'cancelled';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -41,6 +53,9 @@ class Event extends Model
         'capacity',
         'is_published',
         'visibility',
+        // Refunds & cancellations (additive, nullable). NULL == active.
+        'status',
+        'cancelled_at',
         'is_default',
     ];
 
@@ -57,6 +72,7 @@ class Event extends Model
         'capacity' => 'integer',
         'is_published' => 'boolean',
         'is_default' => 'boolean',
+        'cancelled_at' => 'datetime',
     ];
 
     /**
@@ -109,6 +125,27 @@ class Event extends Model
     }
 
     /**
+     * Whether this event has been cancelled. NULL status == active (back-compat), so
+     * only an explicit STATUS_CANCELLED counts as cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    /**
+     * Scope a query to exclude cancelled events. NULL/'active' rows pass through, so this
+     * is a no-op for every existing (NULL-status) row — nothing currently listed drops.
+     */
+    public function scopeNotCancelled(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q) {
+            $q->whereNull('status')
+                ->orWhere('status', '<>', self::STATUS_CANCELLED);
+        });
+    }
+
+    /**
      * Fields exposed to the public API (omits is_default / internal-only flags).
      *
      * @return array<string, mixed>
@@ -128,6 +165,10 @@ class Event extends Model
             'currency' => $this->currency,
             'capacity' => $this->capacity,
             'is_published' => $this->is_published,
+            // Refunds & cancellations: surface lifecycle status (NULL == active) so the
+            // frontend can render a "cancelled" notice on a direct-link visit. Additive.
+            'status' => $this->status,
+            'cancelled_at' => $this->cancelled_at,
             // Phase 2: read-only active ticket types for the public event page.
             // Existing keys above are untouched (backward compatible). Uses the
             // already-loaded relation when eager-loaded, else lazy-loads it.

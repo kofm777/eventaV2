@@ -66,6 +66,11 @@ class Order extends Model
         'platform_fee',
         'organizer_amount',
         'paid_at',
+        // Refunds & cancellations (additive, nullable). refunded_at/cancelled_at are
+        // audit stamps; refund_reference holds the gateway refund id (or 'manual').
+        'refunded_at',
+        'cancelled_at',
+        'refund_reference',
         'ticket_download_token',
     ];
 
@@ -80,6 +85,8 @@ class Order extends Model
         'platform_fee' => 'decimal:2',
         'organizer_amount' => 'decimal:2',
         'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     /**
@@ -140,6 +147,22 @@ class Order extends Model
     }
 
     /**
+     * Whether the order has been refunded (terminal).
+     */
+    public function isRefunded(): bool
+    {
+        return $this->status === self::STATUS_REFUNDED;
+    }
+
+    /**
+     * Whether the order has been cancelled (terminal).
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    /**
      * Whether the order is in a terminal status (no further status writes allowed).
      */
     public function isTerminal(): bool
@@ -150,8 +173,9 @@ class Order extends Model
     /**
      * Phase 5 state-machine guard: whether a transition to $to is legal from the
      * current status. Only a PENDING_PAYMENT order may move to PAID/FAILED/CANCELLED;
-     * a terminal order (PAID/REFUNDED/FAILED/CANCELLED) rejects every status write so
-     * a confirm/webhook can never overwrite a successful PAID/REFUNDED order.
+     * a PAID order may additionally move to REFUNDED/CANCELLED (refunds/cancellations);
+     * REFUNDED/FAILED/CANCELLED stay frozen so a confirm/webhook can never overwrite a
+     * settled order and a double-refund is impossible.
      */
     public function canTransitionTo(string $to): bool
     {
@@ -165,6 +189,18 @@ class Order extends Model
             return in_array($to, [
                 self::STATUS_PAID,
                 self::STATUS_FAILED,
+                self::STATUS_CANCELLED,
+            ], true);
+        }
+
+        // Refunds & cancellations: a PAID order may move to REFUNDED or CANCELLED.
+        // These are the ONLY two new outbound edges; everything below stays frozen,
+        // so REFUNDED/FAILED/CANCELLED are still terminal and a double-refund is
+        // structurally impossible (REFUNDED->REFUNDED is handled by the same-status
+        // no-op above, never re-firing a gateway refund).
+        if ($this->status === self::STATUS_PAID) {
+            return in_array($to, [
+                self::STATUS_REFUNDED,
                 self::STATUS_CANCELLED,
             ], true);
         }

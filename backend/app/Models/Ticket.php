@@ -48,6 +48,8 @@ class Ticket extends Model
         'qr_image',
         'status',
         'checked_in_at',
+        // Refunds & cancellations: stamp set when a ticket is voided (refunded/cancelled).
+        'voided_at',
         'scanner_user',
         'download_token',
         'expires_at',
@@ -58,6 +60,7 @@ class Ticket extends Model
      */
     protected $casts = [
         'checked_in_at' => 'datetime',
+        'voided_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
 

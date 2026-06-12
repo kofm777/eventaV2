@@ -177,12 +177,21 @@ Route::prefix('v1')->group(function () {
             // Orders (NEW): Order already BelongsToOrganizer -> auto-scoped.
             Route::get('/orders', [OrderController::class, 'index']);
 
+            // Refunds & cancellations (auto-scoped: own-rows-only for owner/admin, any for
+            // super-admin; staff is excluded by route placement — staff is granted only on
+            // the scan routes). Bound by order_number.
+            Route::post('/orders/{order_number}/refund', [OrderController::class, 'refund']);
+            Route::post('/orders/{order_number}/cancel', [OrderController::class, 'cancel']);
+
             // Events CRUD (admin)
             Route::get('/events', [EventController::class, 'index']);
             Route::post('/events', [EventController::class, 'store']);
             Route::get('/events/{id}', [EventController::class, 'show']);
             Route::put('/events/{id}', [EventController::class, 'update']);
             Route::delete('/events/{id}', [EventController::class, 'destroy']);
+
+            // Cancel an event (cascade refund/cancel orders + void tickets). Auto-scoped.
+            Route::post('/events/{id}/cancel', [EventController::class, 'cancel']);
 
             // Ticket types (Phase 2): nested under an event, auto-scoped by the Phase 0
             // global scope. Purchase/confirm/webhook are RE-ENABLED in Phase 3 (public

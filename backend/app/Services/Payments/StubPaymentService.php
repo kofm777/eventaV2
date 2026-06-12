@@ -109,4 +109,27 @@ class StubPaymentService implements PaymentService
             reference: $reference
         );
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * STUB: no-op success. No real money moves (no real charge was taken), but we return
+     * success:true with a synthetic refund id so the refund lifecycle (void tickets,
+     * REFUNDED transition, ledger exclusion) runs end-to-end in the demo.
+     */
+    public function refund(Order $order, ?float $amount = null): PaymentRefundResult
+    {
+        Log::warning('STUB payment driver refund — NO real money moved. Demo only.', [
+            'order_number' => $order->order_number,
+            'amount' => $amount ?? $order->amount_total,
+        ]);
+
+        // TODO(real gateway): call $stripe->refunds->create(['payment_intent'=>...]) or the
+        // provider's refund endpoint; map success/failure onto PaymentRefundResult.
+        return new PaymentRefundResult(
+            provider: 'stub',
+            refundId: 'stub_refund_' . Str::random(16),
+            success: true
+        );
+    }
 }

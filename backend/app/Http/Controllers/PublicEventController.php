@@ -13,6 +13,8 @@ class PublicEventController extends Controller
     public function index(): JsonResponse
     {
         $events = Event::published()
+            // Refunds & cancellations: hide cancelled events (no-op for NULL/active rows).
+            ->notCancelled()
             // Eager-load active tiers so toPublicArray() exposes them read-only without N+1.
             ->with(['ticketTypes' => fn ($q) => $q->where('is_active', true)])
             ->orderBy('starts_at', 'asc')
@@ -34,6 +36,9 @@ class PublicEventController extends Controller
     public function show(string $slug): JsonResponse
     {
         $event = Event::published()
+            // Refunds & cancellations: a cancelled event drops from the public surface
+            // (404). Direct-link buyers are still hard-blocked at PurchaseController.
+            ->notCancelled()
             ->with(['ticketTypes' => fn ($q) => $q->where('is_active', true)])
             ->where('slug', $slug)
             ->first();

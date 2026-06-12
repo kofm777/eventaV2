@@ -27,6 +27,8 @@ class PublicDiscoverController extends Controller
             ->where('is_published', true)
             // Hide 'unlisted' from the marketplace (reachable only by direct link/storefront).
             ->where('visibility', Event::VISIBILITY_MARKETPLACE)
+            // Refunds & cancellations: drop cancelled events (no-op for NULL/active rows).
+            ->notCancelled()
             // Only events whose organizer is currently active (no suspended/pending orgs).
             ->whereHas('organizer', fn ($q) => $q->where('status', Organizer::STATUS_ACTIVE))
             // Attribution + active tiers, no private org fields selected.

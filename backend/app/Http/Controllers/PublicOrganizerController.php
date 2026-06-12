@@ -38,6 +38,9 @@ class PublicOrganizerController extends Controller
         // and 'unlisted' published events (only /discover hides unlisted).
         $events = $organizer->events()
             ->where('is_published', true)
+            // Refunds & cancellations: hide cancelled events from the storefront too
+            // (no-op for NULL/active rows).
+            ->notCancelled()
             ->with(['ticketTypes' => fn ($q) => $q->where('is_active', true)])
             ->orderBy('starts_at', 'asc')
             ->orderBy('created_at', 'desc')

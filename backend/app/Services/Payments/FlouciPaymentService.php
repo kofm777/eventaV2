@@ -222,4 +222,32 @@ class FlouciPaymentService implements PaymentService
     {
         return null;
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Flouci has NO automatic refund API integrated yet, so this is a conservative TODO
+     * seam: it returns success:false so the controller 502s and the order stays PAID
+     * rather than silently recording a refund that never happened at the bank.
+     *
+     * Manual refunds (money moved out-of-band by the organizer) go through the explicit
+     * OrderRefundService manual override, which records refund_reference='manual' and
+     * skips this gateway call so the ledger exclusion still happens.
+     */
+    public function refund(Order $order, ?float $amount = null): PaymentRefundResult
+    {
+        Log::warning('Flouci refund requested but no automatic refund API is integrated.', [
+            'order_number' => $order->order_number,
+            'amount' => $amount ?? $order->amount_total,
+        ]);
+
+        // TODO(flouci refund): POST {base}/refund_payment with the stored payment_intent_id
+        // (Flouci result.payment_id) + secrets; map result.status onto success/failure.
+        return new PaymentRefundResult(
+            provider: 'flouci',
+            refundId: '',
+            success: false,
+            failureReason: 'Flouci refunds are processed manually; automatic refund API not yet integrated.'
+        );
+    }
 }

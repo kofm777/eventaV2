@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Models\Event;
+use App\Services\EventCancellationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -152,6 +153,53 @@ class EventController extends Controller
         return response()->json([
             'ok' => true,
             'message' => 'Event deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Cancel an event (organizer-scoped + super-admin). One-way: marks the event
+     * cancelled, then cascades — refunds PAID orders, cancels PENDING orders, and voids
+     * all remaining active tickets. Hides the event from /discover + storefront and
+     * blocks new purchases.
+     *
+     * The Event lookup is AUTO-SCOPED by the Phase 0 BelongsToOrganizer global scope:
+     * owner/admin can only cancel their OWN events (another org's id -> NULL -> 404);
+     * super-admin's scope is a no-op so they can cancel any event. Idempotent: re-cancelling
+     * an already-cancelled event is a no-op success.
+     */
+    public function cancel(Request $request, int $id, EventCancellationService $service): JsonResponse
+    {
+        $event = Event::find($id);
+
+        if (! $event) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Event not found.',
+            ], 404);
+        }
+
+        try {
+            $event = $service->cancel(
+                $event,
+                $request->user('sanctum')?->id,
+                $request->boolean('manual')
+            );
+        } catch (\Throwable $e) {
+            Log::error('Failed to cancel event', [
+                'event_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Error while cancelling the event.',
+            ], 500);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'event' => $event,
+            'message' => 'Event cancelled. Orders refunded and tickets voided.',
         ]);
     }
 
