@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AttendeeLoginRequest;
 use App\Http\Requests\AttendeeRegisterRequest;
 use App\Models\Attendee;
+use App\Services\EmailVerificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,7 +24,7 @@ class AttendeeAuthController extends Controller
      * Public attendee signup. Creates an Attendee (password auto-hashed by the model
      * `hashed` cast), issues a fresh token, returns the standard {ok, attendee, token}.
      */
-    public function register(AttendeeRegisterRequest $request): JsonResponse
+    public function register(AttendeeRegisterRequest $request, EmailVerificationService $verification): JsonResponse
     {
         $attendee = Attendee::create([
             'name' => $request->validated('name'),
@@ -35,6 +36,19 @@ class AttendeeAuthController extends Controller
 
         $token = $attendee->createToken('attendee-token')->plainTextToken;
 
+        // Fire the email-verification email (best-effort). A mail failure must NOT fail
+        // signup — the service swallows + logs send errors internally, and we still wrap
+        // the whole call defensively.
+        try {
+            $verification->issue($attendee);
+        } catch (\Exception $e) {
+            Log::warning('Failed to issue attendee verification on register', [
+                'attendee_id' => $attendee->id,
+                'email' => $attendee->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         Log::info('Attendee registered', [
             'attendee_id' => $attendee->id,
             'email' => $attendee->email,
@@ -42,7 +56,8 @@ class AttendeeAuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'attendee' => $attendee->only(['id', 'name', 'email', 'phone']),
+            'attendee' => $attendee->only(['id', 'name', 'email', 'phone'])
+                + ['email_verified' => $attendee->hasVerifiedEmail()],
             'token' => $token,
             'message' => 'Account created.',
         ], 201);
@@ -80,7 +95,8 @@ class AttendeeAuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'attendee' => $attendee->only(['id', 'name', 'email', 'phone']),
+            'attendee' => $attendee->only(['id', 'name', 'email', 'phone'])
+                + ['email_verified' => $attendee->hasVerifiedEmail()],
             'token' => $token,
             'message' => 'Connexion réussie.',
         ]);
@@ -108,7 +124,8 @@ class AttendeeAuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'attendee' => $attendee->only(['id', 'name', 'email', 'phone']),
+            'attendee' => $attendee->only(['id', 'name', 'email', 'phone'])
+                + ['email_verified' => $attendee->hasVerifiedEmail()],
         ]);
     }
 }

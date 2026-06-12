@@ -54,11 +54,23 @@ return [
         ],
     ],
 
+    // Password reset brokers — TWO fully walled-off brokers, one per identity. Each
+    // points at its OWN reset-tokens table so an admin reset token can NEVER reset an
+    // attendee (and vice versa). The 'admins' broker no longer points at the MISSING
+    // password_resets table. guards/providers/defaults above are LEFT UNTOUCHED.
     'passwords' => [
         'admins' => [
             'provider' => 'admins',
-            'table' => 'password_resets',
+            'table' => 'admin_password_reset_tokens',
             'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'attendees' => [
+            'provider' => 'attendees',
+            'table' => 'attendee_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
         ],
     ],
 

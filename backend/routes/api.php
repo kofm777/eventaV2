@@ -6,8 +6,11 @@ use App\Http\Controllers\Admin\OrganizerController as AdminOrganizerController;
 use App\Http\Controllers\Admin\PlatformController;
 use App\Http\Controllers\Admin\TicketTypeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminPasswordResetController;
 use App\Http\Controllers\AttendeeAuthController;
+use App\Http\Controllers\AttendeeEmailVerificationController;
 use App\Http\Controllers\AttendeeOrderController;
+use App\Http\Controllers\AttendeePasswordResetController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\OrganizerSignupController;
@@ -117,10 +120,23 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [AttendeeAuthController::class, 'login'])
             ->middleware('throttle:5,1');
 
+        // Public, non-enumerable attendee password reset (broker 'attendees') + email
+        // verification. forgot/reset/verify are all reachable while logged out.
+        Route::post('/password/forgot', [AttendeePasswordResetController::class, 'forgot'])
+            ->middleware('throttle:5,1');
+        Route::post('/password/reset', [AttendeePasswordResetController::class, 'reset'])
+            ->middleware('throttle:10,1');
+        Route::post('/email/verify', [AttendeeEmailVerificationController::class, 'verify'])
+            ->middleware('throttle:10,1');
+
         Route::middleware(['auth:sanctum-attendee', 'attendee'])->group(function () {
             Route::post('/logout', [AttendeeAuthController::class, 'logout']);
             Route::get('/me', [AttendeeAuthController::class, 'me']);
             Route::get('/my-tickets', [AttendeeOrderController::class, 'myTickets']);
+
+            // Authenticated re-send of the verification email (tight throttle: 3/10min).
+            Route::post('/email/resend', [AttendeeEmailVerificationController::class, 'resend'])
+                ->middleware('throttle:3,10');
         });
     });
 
@@ -128,6 +144,13 @@ Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('/admin/login', [AuthController::class, 'login'])
             ->middleware('throttle:5,1');
+
+        // Public, non-enumerable admin password reset (broker 'admins'). OUTSIDE the
+        // auth:sanctum subgroup — the admin is logged out when they request/consume these.
+        Route::post('/admin/password/forgot', [AdminPasswordResetController::class, 'forgot'])
+            ->middleware('throttle:5,1');
+        Route::post('/admin/password/reset', [AdminPasswordResetController::class, 'reset'])
+            ->middleware('throttle:10,1');
 
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);

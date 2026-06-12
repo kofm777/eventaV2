@@ -20,6 +20,11 @@ return [
     'qr_hmac_secret' => env('QR_HMAC_SECRET'),
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:4200'),
 
+    // Verification/demo aid: when TRUE the forgot/resend responses ALSO echo the reset
+    // link / verify token so demos and automated tests can complete the round-trip while
+    // MAIL_MAILER=log delivers nothing. Defaults FALSE = OFF in production.
+    'password_reset_debug' => env('PASSWORD_RESET_DEBUG', false),
+
     'providers' => [
         Illuminate\Auth\AuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,

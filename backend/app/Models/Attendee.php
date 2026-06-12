@@ -43,6 +43,8 @@ class Attendee extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        // Never serialize the verification token (it is a credential, like password).
+        'email_verification_token',
     ];
 
     /**
@@ -52,9 +54,19 @@ class Attendee extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'email_verification_sent_at' => 'datetime',
         // Auto-hash on set (consistent with Admin); never hash manually.
         'password' => 'hashed',
     ];
+
+    /**
+     * Whether this attendee has verified their email. Note: email_verification_token is
+     * deliberately NOT in $fillable, so it can never be mass-assigned.
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
 
     /**
      * The orders this attendee has placed (across ALL organizers).
