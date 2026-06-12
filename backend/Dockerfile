@@ -2,10 +2,11 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www/html
 
-# Install system dependencies INCLUDING ImageMagick
+# Install system dependencies INCLUDING ImageMagick and nginx
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    nginx \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
@@ -19,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
+    && rm -f /etc/nginx/sites-enabled/default \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -27,25 +29,24 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy app
 COPY . /var/www/html
 
-# Fix permissions before running Composer
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# nginx site template + entrypoint
+COPY docker/nginx.conf.template /etc/nginx/templates/laravel.conf
+COPY docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
-# Install dependencies as root
+# Permissions: storage + bootstrap/cache writable by the php-fpm worker (www-data) and
+# by the boot-time artisan caches.
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# APP_KEY is provided at runtime via the environment (Railway vars); .env is NOT shipped.
-# Keep this non-fatal so the build never depends on a committed .env file.
+# APP_KEY comes from the runtime environment (Railway vars); .env is NOT shipped.
 RUN php artisan key:generate --no-interaction || true
-
-# Ensure storage/logs folder is writable at runtime
-RUN chmod -R 777 /var/www/html/storage/logs
-
-# Switch to www-data for security
-USER www-data
 
 EXPOSE 8080
 
-# On every deploy: run pending migrations + idempotent seeders, then serve on Railway's $PORT.
-# Migrations/seeders are idempotent, so this is safe to re-run on each container start.
-CMD ["sh", "-c", "php artisan migrate --force --seed && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+# nginx (foreground, PID 1) + php-fpm (background). Migrations/caches run in start.sh.
+# Runs as root so nginx/php-fpm masters can bind and drop to www-data workers.
+CMD ["/usr/local/bin/start.sh"]
