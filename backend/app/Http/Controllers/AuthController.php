@@ -52,7 +52,8 @@ class AuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'admin' => $admin->only(['id', 'name', 'email']),
+            // Additive role/organizer_id keys; id/name/email unchanged so the frontend keeps working.
+            'admin' => $admin->only(['id', 'name', 'email', 'role', 'organizer_id']),
             'token' => $token,
             'message' => 'Connexion réussie.',
         ]);
@@ -81,7 +82,8 @@ class AuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'admin' => $admin->only(['id', 'name', 'email']),
+            // Additive role/organizer_id keys; id/name/email unchanged.
+            'admin' => $admin->only(['id', 'name', 'email', 'role', 'organizer_id']),
         ]);
     }
 }

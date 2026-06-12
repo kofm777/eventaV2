@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganizer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
-    use HasFactory;
+    use BelongsToOrganizer, HasFactory;
 
     /**
      * Order lifecycle status constants (app-validated, NOT a DB enum).
@@ -24,6 +25,7 @@ class Order extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'organizer_id',
         'order_number',
         'event_id',
         'participant_id',

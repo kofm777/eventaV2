@@ -44,6 +44,9 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\InitializeSessionKeys::class, // add here
+            // Resolve the current organizer from the Sanctum admin AFTER bindings so
+            // the tenant global scope sees the right context on every API request.
+            \App\Http\Middleware\ResolveOrganizer::class,
         ],
     ];
 
@@ -63,6 +66,7 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
+        'resolve.organizer' => \App\Http\Middleware\ResolveOrganizer::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,

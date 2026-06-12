@@ -33,6 +33,10 @@ class OrderService
         $amountTotal = round((float) $event->ticket_price * $quantity, 2);
 
         return Order::create([
+            // Tenant the order to the event's organizer. The guest purchase flow is
+            // unauthenticated (no HTTP organizer context), so we derive it from the
+            // event explicitly instead of relying on the auto-stamp hook.
+            'organizer_id' => $event->organizer_id,
             'order_number' => $this->generateOrderNumber(),
             'event_id' => $event->id,
             'buyer_email' => $buyer['email'],
@@ -78,6 +82,8 @@ class OrderService
             //    existing participant in that case (refreshing it to 'accepted' for this event)
             //    instead of throwing a duplicate-key QueryException that would 500 the request.
             $participantData = [
+                // Inherit the order's tenant so issued tickets are correctly tenanted.
+                'organizer_id' => $order->organizer_id,
                 'event_id' => $order->event_id,
                 'first_name' => $order->buyer_first_name,
                 'last_name' => $order->buyer_last_name,

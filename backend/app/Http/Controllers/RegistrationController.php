@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterParticipantRequest;
 use App\Mail\ParticipantAccessMail;
+use App\Models\Event;
+use App\Models\Organizer;
 use App\Models\Participant;
 use App\Services\QrCodeService;
 use Illuminate\Http\JsonResponse;
@@ -26,8 +28,16 @@ class RegistrationController extends Controller
         try {
             $accessType = trim($request->access_type);
 
+            // /register is UNAUTHENTICATED -> there is no organizer context, so the
+            // creating() auto-stamp hook won't fire. Resolve the tenant explicitly:
+            // the target event's organizer when an event is supplied, else the Demo
+            // Organizer (Phase 0 has no event selection -> always Demo Organizer),
+            // keeping the participant visible to the super-admin and Demo Organizer.
+            $organizerId = $this->resolveOrganizerId($request->input('event_id'));
+
             // Create participant
             $participant = Participant::create([
+                'organizer_id' => $organizerId,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'company_name' => $request->company_name,
@@ -97,5 +107,24 @@ class RegistrationController extends Controller
                 'message' => 'An error occurred during registration.',
             ], 500);
         }
+    }
+
+    /**
+     * Resolve the organizer a public (unauthenticated) registration belongs to:
+     *  - the target event's organizer_id when a valid event_id is provided;
+     *  - otherwise the Demo Organizer (the Phase 0 default, preserving today's
+     *    single-tenant behavior). Returns null only if no Demo Organizer exists.
+     */
+    private function resolveOrganizerId(mixed $eventId): ?int
+    {
+        if (! empty($eventId)) {
+            $event = Event::find($eventId);
+
+            if ($event && $event->organizer_id) {
+                return $event->organizer_id;
+            }
+        }
+
+        return Organizer::where('slug', 'demo-organizer')->value('id');
     }
 }

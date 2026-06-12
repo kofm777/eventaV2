@@ -26,11 +26,15 @@ class AdminSeeder extends Seeder
         }
 
         // updateOrCreate keyed on email: rotates the password to the current env value.
+        // The seeded env admin is the platform super-admin: organizer_id NULL +
+        // role 'superadmin' so it bypasses the tenant scope and sees every organizer.
         Admin::updateOrCreate(
             ['email' => $email],
             [
                 'name' => 'Admin User',
                 'password' => Hash::make($password),
+                'organizer_id' => null,
+                'role' => Admin::ROLE_SUPERADMIN,
             ]
         );
     }

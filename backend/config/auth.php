@@ -1,5 +1,10 @@
 <?php
 
+// Multi-tenancy (Phase 0): identity is UNCHANGED. The single `admins` table +
+// Sanctum 'api' guard remain the only auth mechanism. Tenancy is layered on via
+// two additive Admin columns (organizer_id, role): organizer_id NULL + role
+// 'superadmin' = platform staff (scope bypass); a non-null organizer_id scopes the
+// admin to one organizer. No new guard/provider is needed here.
 return [
 
     'defaults' => [

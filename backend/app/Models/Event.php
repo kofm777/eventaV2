@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
 {
-    use HasFactory;
+    use BelongsToOrganizer, HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -17,6 +18,7 @@ class Event extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'organizer_id',
         'name',
         'slug',
         'description',

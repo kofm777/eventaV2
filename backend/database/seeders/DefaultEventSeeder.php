@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Event;
+use App\Models\Organizer;
 use Illuminate\Database\Seeder;
 
 /**
@@ -18,9 +19,14 @@ class DefaultEventSeeder extends Seeder
      */
     public function run(): void
     {
-        Event::firstOrCreate(
+        // Owned by the Demo Organizer so the default event is correctly tenanted.
+        // DemoOrganizerSeeder runs first; fall back to a lookup just in case.
+        $demoOrganizerId = Organizer::where('slug', 'demo-organizer')->value('id');
+
+        $event = Event::firstOrCreate(
             ['is_default' => true],
             [
+                'organizer_id' => $demoOrganizerId,
                 'name' => 'Default Event',
                 'slug' => 'default-event',
                 'allow_guest_checkout' => true,
@@ -30,5 +36,10 @@ class DefaultEventSeeder extends Seeder
                 'is_default' => true,
             ]
         );
+
+        // Idempotently backfill organizer_id on an already-existing default event.
+        if ($demoOrganizerId && is_null($event->organizer_id)) {
+            $event->update(['organizer_id' => $demoOrganizerId]);
+        }
     }
 }

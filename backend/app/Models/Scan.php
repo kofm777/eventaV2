@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganizer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Scan extends Model
 {
-    use HasFactory;
+    use BelongsToOrganizer, HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -16,6 +17,7 @@ class Scan extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'organizer_id',
         'participant_id',
         'scanned_at',
         'scanner_user',
